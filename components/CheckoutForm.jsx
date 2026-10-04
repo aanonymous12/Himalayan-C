@@ -2,7 +2,7 @@
 import { useState, useTransition } from 'react';
 import Link from 'next/link';
 import { useCart } from './CartProvider';
-import { placeOrder } from '@/app/checkout/actions';
+import { placeOrder } from '@/app/(site)/checkout/actions';
 import { money } from '@/lib/format';
 
 export default function CheckoutForm({ user, profile, taxRate, accepting, phoneShown }) {

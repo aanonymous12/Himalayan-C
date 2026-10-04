@@ -2,6 +2,15 @@
 
 **Stack (one framework):** Next.js 15 (App Router, React 19) on Vercel, Supabase (Postgres, Auth, Storage). No online payment: customers pay at the restaurant.
 
+## Revision 5: polish, login and dashboard
+- **Login fixed**: the password box rejected anything under 6 characters, so short passwords could never log in. Login now accepts any password. One login page for everyone; admins land on the dashboard, customers on their account. Added forgot-password, reset-password and change-password.
+- **Admin dashboard rebuilt** with its own layout (sidebar, top bar, mobile menu), separate from the public header and footer.
+- **Menu fully customizable**: add, edit, delete, duplicate and reorder (up / down) categories and dishes, photos, options, dietary tags, sold out, popular.
+- **Cart**: slide-over cart with quantity controls and remove, plus a floating "View order" bar.
+- **Navigation**: Home, Menu, About Us, Gallery, Reviews, Reservations, Contact Us and an Order Now button. Hamburger menu below 1240px.
+- **Flat design**: removed the mountain illustration, shadows and hover lifts. Hero can use an admin-uploaded video or photo, otherwise it is plain dark brown.
+- Light theme only (no automatic dark mode) so colors stay consistent.
+
 ## Revision 4: full restaurant website (this version)
 
 ### The crash when adding menu items (fixed)
@@ -35,7 +44,7 @@ Also: breadcrumbs with schema, Restaurant and aggregate rating schema, canonical
 Dashboard (sales, best sellers, items needing attention), Orders, Reservations (confirm / decline, emails the guest), Inbox (messages, catering requests, private feedback), Menu (categories, dishes, photos, options, tags), Gallery, Reviews, Journal, Settings (hero text and video, hours, closed days, tax, links, toggles for orders / reservations / catering).
 
 ## Setup changes
-- Existing database: run `supabase/migrations/003_full_site.sql` once. New projects: `schema.sql` already includes it.
+- Database: run `supabase/schema.sql`. It is safe to run on a new project or on top of an older version (it only adds what is missing and keeps all data).
 - Optional emails: add `RESEND_API_KEY` and `EMAIL_FROM` in Vercel (see `.env.example`), and put your email in Admin > Settings.
 - Put your Google review link in Admin > Settings, then point NFC tags and table QR codes at `yourdomain.com/review`.
 

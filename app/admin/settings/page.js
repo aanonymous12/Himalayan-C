@@ -20,7 +20,8 @@ export default async function AdminSettings() {
           <h2 style={{ ...H, marginTop: 0 }}>Home page</h2>
           <div className="field"><label htmlFor="hero_title">Headline</label><input id="hero_title" name="hero_title" defaultValue={s.hero_title} maxLength={80} /></div>
           <div className="field"><label htmlFor="hero_subtitle">Line under the headline</label><input id="hero_subtitle" name="hero_subtitle" defaultValue={s.hero_subtitle} maxLength={120} /></div>
-          <MediaUpload name="hero_video_url" label="Background video" kind="video" initial={s.hero_video_url} hint="MP4 or WebM, 10 to 20 second loop, 1080p, under 15 MB. Without a video the hero shows a mountain illustration." />
+          <MediaUpload name="hero_video_url" label="Background video (optional)" kind="video" initial={s.hero_video_url} hint="MP4 or WebM, 10 to 20 second loop, 1080p, under 15 MB. Plays muted behind the headline." />
+          <MediaUpload name="hero_image_url" label="Background photo (used when there is no video)" kind="image" initial={s.hero_image_url} hint="A wide, dark-ish food or restaurant photo works best. Without a video or photo the hero is plain dark brown." />
           <MediaUpload name="about_image_url" label="Restaurant photo (home and About pages)" kind="image" initial={s.about_image_url} />
 
           <h2 style={H}>Ordering and bookings</h2>

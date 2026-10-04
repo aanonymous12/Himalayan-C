@@ -116,7 +116,7 @@ export async function saveSettings(a, b) {
       phone: t(fd, 'phone', 30), email: t(fd, 'email', 120), address: t(fd, 'address', 200), hours: t(fd, 'hours', 300),
       open_time: t(fd, 'open_time', 5) || '12:00', close_time: t(fd, 'close_time', 5) || '21:00',
       closed_days: fd.getAll('closed').join(','),
-      story: t(fd, 'story', 1500), philosophy: t(fd, 'philosophy', 800), about_image_url: url('about_image_url') || null,
+      story: t(fd, 'story', 1500), philosophy: t(fd, 'philosophy', 800), about_image_url: url('about_image_url') || null, hero_image_url: url('hero_image_url') || null,
       hero_title: t(fd, 'hero_title', 80) || 'Himalayan flavors, made from scratch.', hero_subtitle: t(fd, 'hero_subtitle', 120),
       hero_video_url: url('hero_video_url') || null,
       instagram_url: url('instagram_url'), facebook_url: url('facebook_url'), google_review_url: url('google_review_url'), doordash_url: url('doordash_url'),
@@ -214,4 +214,41 @@ export async function setMessageHandled(a, b) {
 }
 export async function setFeedbackResolved(a, b) {
   return run(a, b, async (fd) => { const { sb } = await requireAdmin(); must(await sb.from('feedback').update({ resolved: t(fd, 'resolved') !== 'true' }).eq('id', t(fd, 'id'))); revalidatePath('/admin', 'layout'); return { ok: true }; });
+}
+
+// ---------- menu ordering and duplicating ----------
+async function reorder(sb, table, scope, id, dir) {
+  let q = sb.from(table).select('id').order('sort_order').order('name');
+  if (scope) q = q.eq(scope[0], scope[1]);
+  const { data, error } = await q;
+  if (error) throw new Error(error.message);
+  const ids = data.map((r) => r.id);
+  const i = ids.indexOf(id), j = i + (dir === 'up' ? -1 : 1);
+  if (i < 0 || j < 0 || j >= ids.length) return;
+  [ids[i], ids[j]] = [ids[j], ids[i]];
+  await Promise.all(ids.map((x, k) => sb.from(table).update({ sort_order: (k + 1) * 10 }).eq('id', x)));
+}
+
+export async function moveCategory(a, b) {
+  return run(a, b, async (fd) => { const { sb } = await requireAdmin(); await reorder(sb, 'menu_categories', null, t(fd, 'id'), t(fd, 'dir')); done(); return { ok: true }; });
+}
+export async function moveItem(a, b) {
+  return run(a, b, async (fd) => {
+    const { sb } = await requireAdmin();
+    const { data: it } = await sb.from('menu_items').select('category_id').eq('id', t(fd, 'id')).single();
+    if (it) await reorder(sb, 'menu_items', ['category_id', it.category_id], t(fd, 'id'), t(fd, 'dir'));
+    done();
+    return { ok: true };
+  });
+}
+export async function duplicateItem(a, b) {
+  return run(a, b, async (fd) => {
+    const { sb } = await requireAdmin();
+    const { data: it, error } = await sb.from('menu_items').select('*').eq('id', t(fd, 'id')).single();
+    if (error || !it) throw new Error('Dish not found.');
+    const { id, created_at, ...rest } = it;
+    must(await sb.from('menu_items').insert({ ...rest, name: `${it.name} (copy)`, available: false, featured: false, sort_order: (it.sort_order || 0) + 1 }));
+    done();
+    return { ok: true };
+  });
 }

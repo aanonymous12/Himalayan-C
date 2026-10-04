@@ -10,8 +10,8 @@ export default async function Header() {
       {s.announcement && <div className="notice">{s.announcement}</div>}
       <header className="site-head">
         <div className="wrap">
-          <Link href="/" className="brand"><b>Himalayan</b><span>Nepalese &amp; Indian Cuisine</span></Link>
-          <Nav user={user ? { email: user.email } : null} isAdmin={isAdmin} />
+          <Link href="/" className="brand"><b>Himalayan</b><span>NEPALESE &amp; INDIAN CUISINE</span></Link>
+          <Nav user={user ? { email: user.email } : null} isAdmin={isAdmin} reservations={s.reservations_enabled} />
         </div>
       </header>
     </>

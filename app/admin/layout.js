@@ -1,18 +1,10 @@
-import Link from 'next/link';
+import AdminShell from '@/components/admin/AdminShell';
 import { requireAdmin } from '@/lib/auth';
 
 export const metadata = { title: 'Admin', robots: { index: false, follow: false } };
 
-const LINKS = [['/admin', 'Dashboard'], ['/admin/orders', 'Orders'], ['/admin/reservations', 'Reservations'], ['/admin/messages', 'Inbox'], ['/admin/menu', 'Menu'], ['/admin/gallery', 'Gallery'], ['/admin/reviews', 'Reviews'], ['/admin/blog', 'Journal'], ['/admin/settings', 'Settings']];
-
+// Admin is the same login as everyone else. Only accounts marked as admin get past this point.
 export default async function AdminLayout({ children }) {
-  await requireAdmin();
-  return (
-    <div className="wrap admin">
-      <nav className="admin-nav" aria-label="Admin">
-        {LINKS.map(([h, l]) => <Link key={h} href={h}>{l}</Link>)}
-      </nav>
-      <div>{children}</div>
-    </div>
-  );
+  const { user } = await requireAdmin();
+  return <AdminShell email={user.email}>{children}</AdminShell>;
 }

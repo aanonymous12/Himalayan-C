@@ -1,8 +1,6 @@
 import './globals.css';
 import { Cormorant_Garamond, Figtree } from 'next/font/google';
 import { CartProvider } from '@/components/CartProvider';
-import Header from '@/components/Header';
-import Footer from '@/components/Footer';
 
 const display = Cormorant_Garamond({ weight: ['500', '600', '700'], subsets: ['latin'], variable: '--font-display', display: 'swap' });
 const body = Figtree({ subsets: ['latin'], variable: '--font-body', display: 'swap' });
@@ -17,18 +15,12 @@ export const metadata = {
   twitter: { card: 'summary_large_image' },
 };
 
-export const viewport = { width: 'device-width', initialScale: 1, themeColor: '#9a4f26' };
+export const viewport = { width: 'device-width', initialScale: 1, themeColor: '#2b1810', colorScheme: 'light' };
 
 export default function RootLayout({ children }) {
   return (
     <html lang="en" className={`${display.variable} ${body.variable}`}>
-      <body>
-        <CartProvider>
-          <Header />
-          <main>{children}</main>
-          <Footer />
-        </CartProvider>
-      </body>
+      <body><CartProvider>{children}</CartProvider></body>
     </html>
   );
 }
