@@ -1,5 +1,6 @@
 import Icon from '@/components/Icon';
 import Media from '@/components/Media';
+import HoursCard from '@/components/HoursCard';
 import PageHero from '@/components/PageHero';
 import CtaBand from '@/components/CtaBand';
 import InfoList from '@/components/InfoList';
@@ -19,7 +20,7 @@ export default async function About() {
       <section className="section">
         <div className="wrap split">
           <div><div className="sec-head"><h2>Where we come from</h2></div><p className="lead">{s.story}</p></div>
-          <Media src={s.about_image_url} alt="Our restaurant" />
+          <Media src={s.about_image_url} alt="Our restaurant" fallback={<HoursCard s={s} />} />
         </div>
       </section>
       <section className="section soft">

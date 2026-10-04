@@ -1,6 +1,10 @@
 import './globals.css';
 import { Cormorant_Garamond, Figtree } from 'next/font/google';
 import { CartProvider } from '@/components/CartProvider';
+import SiteChrome from '@/components/SiteChrome';
+import Header from '@/components/Header';
+import Footer from '@/components/Footer';
+import CartDrawer from '@/components/CartDrawer';
 
 const display = Cormorant_Garamond({ weight: ['500', '600', '700'], subsets: ['latin'], variable: '--font-display', display: 'swap' });
 const body = Figtree({ subsets: ['latin'], variable: '--font-body', display: 'swap' });
@@ -20,7 +24,9 @@ export const viewport = { width: 'device-width', initialScale: 1, themeColor: '#
 export default function RootLayout({ children }) {
   return (
     <html lang="en" className={`${display.variable} ${body.variable}`}>
-      <body><CartProvider>{children}</CartProvider></body>
+      <body><CartProvider>
+          <SiteChrome header={<Header />} footer={<Footer />} drawer={<CartDrawer />}>{children}</SiteChrome>
+        </CartProvider></body>
     </html>
   );
 }

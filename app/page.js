@@ -3,6 +3,7 @@ import HeroVideo from '@/components/HeroVideo';
 import DishCard from '@/components/DishCard';
 import Icon from '@/components/Icon';
 import Media from '@/components/Media';
+import HoursCard from '@/components/HoursCard';
 import ReviewCards from '@/components/ReviewCards';
 import CtaBand from '@/components/CtaBand';
 import InfoList, { MapEmbed, directionsUrl } from '@/components/InfoList';
@@ -37,15 +38,9 @@ export default async function Home() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(ld) }} />
 
       <section className="hero">
-        {s.hero_video_url && <HeroVideo src={s.hero_video_url} />}
-        <div className="hero-shade" />
+        {s.hero_video_url ? <HeroVideo src={s.hero_video_url} /> : s.hero_image_url ? <img className="hero-video" src={s.hero_image_url} alt="" /> : null}
+        {(s.hero_video_url || s.hero_image_url) && <div className="hero-shade" />}
         <div className="hero-main">
-          {!s.hero_video_url && (
-            <svg className="hero-art" viewBox="0 0 1200 160" preserveAspectRatio="none" aria-hidden="true">
-              <path d="M0 160V104L110 60L200 110L340 28L470 104L590 50L710 118L850 34L980 102L1100 64L1200 112V160Z" fill="#9a4f26" opacity=".9" />
-              <path d="M0 104L110 60L200 110L340 28L470 104L590 50L710 118L850 34L980 102L1100 64L1200 112" fill="none" stroke="#ffd21a" strokeWidth="2.5" vectorEffect="non-scaling-stroke" />
-            </svg>
-          )}
           <div className="wrap hero-content">
             <h1>{s.hero_title}</h1>
             {s.hero_subtitle && <p className="lede">{s.hero_subtitle}</p>}
@@ -71,7 +66,7 @@ export default async function Home() {
             <p className="lead">{s.story}</p>
             <div className="btn-row"><Link href="/about" className="btn rust">Our story</Link><Link href="/menu" className="btn line">See the menu</Link></div>
           </div>
-          <Media src={s.about_image_url} alt="Inside the restaurant" />
+          <Media src={s.about_image_url} alt="Inside the restaurant" fallback={<HoursCard s={s} />} />
         </div>
       </section>
 
