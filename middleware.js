@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 
 // Keeps the Supabase login session fresh on every request.
 export async function middleware(request) {
+  if (request.nextUrl.pathname === '/Connect') return NextResponse.redirect(new URL('/connect', request.url)); // NFC cards are often typed with a capital C
   let response = NextResponse.next({ request });
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,

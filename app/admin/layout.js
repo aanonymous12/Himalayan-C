@@ -1,10 +1,11 @@
 import AdminShell from '@/components/admin/AdminShell';
-import { requireAdmin } from '@/lib/auth';
+import { getAdmin } from '@/lib/auth';
 
-export const metadata = { title: 'Admin', robots: { index: false, follow: false } };
+export const metadata = { title: 'Dashboard', robots: { index: false, follow: false } };
 
-// Admin is the same login as everyone else. Only accounts marked as admin get past this point.
+// Signed-out visitors see the login at /admin. Signed-in administrators see the dashboard shell.
 export default async function AdminLayout({ children }) {
-  const { user } = await requireAdmin();
-  return <AdminShell email={user.email}>{children}</AdminShell>;
+  const a = await getAdmin();
+  if (!a) return <>{children}</>;
+  return <AdminShell email={a.user.email}>{children}</AdminShell>;
 }

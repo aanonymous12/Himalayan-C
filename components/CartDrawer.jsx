@@ -4,10 +4,11 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useCart } from './CartProvider';
 import { money } from '@/lib/format';
+import LineDetails from './LineDetails';
 
 // Slide-over cart plus a floating "View order" bar, like the big ordering sites.
 export default function CartDrawer() {
-  const { items, setQty, subtotal, count, open, setOpen, ready } = useCart();
+  const { items, setQty, subtotal, count, open, setOpen, ready, blocked } = useCart();
   const path = usePathname();
   const closeBtn = useRef(null);
   const onCheckout = path === '/checkout' || path.startsWith('/order/');
@@ -41,7 +42,7 @@ export default function CartDrawer() {
               <Link href="/menu" className="btn rust" onClick={() => setOpen(false)}>Browse the menu</Link></div>
           ) : items.map((i) => (
             <div className="cart-line" key={i.key}>
-              <div><b>{i.name}</b>{i.option && <div className="muted">{i.option}</div>}
+              <div><b>{i.name}</b><LineDetails line={i} />
                 <div className="qty" style={{ marginTop: '.5rem' }}>
                   <button type="button" onClick={() => setQty(i.key, i.qty - 1)} aria-label={`One less ${i.name}`}>&minus;</button>
                   <span aria-live="polite">{i.qty}</span>
@@ -57,7 +58,7 @@ export default function CartDrawer() {
           <div className="drawer-foot">
             <div className="totals"><div><span>Subtotal</span><b>{money(subtotal)}</b></div></div>
             <p className="hint" style={{ margin: '.4rem 0 1rem' }}>Tax is added at checkout. You pay at the restaurant.</p>
-            <Link href="/checkout" className="btn gold" style={{ width: '100%' }} onClick={() => setOpen(false)}>Checkout</Link>
+            {blocked ? <p className="error">Administrator accounts cannot place orders.</p> : <Link href="/checkout" className="btn gold" style={{ width: '100%' }} onClick={() => setOpen(false)}>Checkout</Link>}
             <button className="btn line" style={{ width: '100%', marginTop: '.6rem' }} onClick={() => setOpen(false)}>Continue ordering</button>
           </div>
         )}

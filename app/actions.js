@@ -78,6 +78,7 @@ export async function submitReservation(a, b) {
     if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) throw new Error('Please choose a date.');
     if (date < todayISO()) throw new Error('Please choose today or a future date.');
     if (closedDays(s.closed_days).includes(new Date(`${date}T12:00:00`).getDay())) throw new Error('We are closed that day. Please pick another date.');
+    if (String(s.closed_dates || '').split(/[\s,;]+/).includes(date)) throw new Error('We are closed on that date. Please pick another date.');
     if (!timeSlots(s.open_time, s.close_time).includes(time)) throw new Error('Please choose one of the available times.');
     if (date === todayISO() && time <= nowHHMM()) throw new Error('That time has already passed today.');
 

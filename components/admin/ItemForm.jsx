@@ -19,6 +19,10 @@ export default function ItemForm({ item, categories, categoryId }) {
         <div className="field"><label>Price</label><input name="price" type="number" step="0.01" min="0" defaultValue={item?.price ?? ''} /><span className="hint">Leave empty if the dish has options.</span></div>
         <div className="field"><label>Options (one per line)</label><textarea name="options" rows={3} placeholder={'Chicken | 14.99\nLamb/Goat | 15.99'} defaultValue={opts} /></div>
       </div>
+      <div className="grid2">
+        <div className="field"><label>Spice levels (comma separated)</label><input name="spice_levels" placeholder="Mild, Medium, Hot, Extra hot" defaultValue={(item?.spice_levels || []).join(', ')} /><span className="hint">Leave empty if spice does not apply. Customers must pick one.</span></div>
+        <div className="field"><label>Add-ons (one per line)</label><textarea name="addons" rows={3} placeholder={'Extra naan | 2.50\nExtra chutney | 1'} defaultValue={(item?.addons || []).map((a) => `${a.label} | ${a.price}`).join('\n')} /><span className="hint">Optional extras customers can tick. Use 0 for free.</span></div>
+      </div>
       <MediaUpload name="image_url" label="Photo" initial={item?.image_url} bucket="menu" kind="image" hint="Resized automatically. Landscape photos look best." />
       <div className="grid2">
         <div className="field"><label>Dietary tags (comma separated)</label><input name="tags" placeholder="Gluten free, Spicy" defaultValue={(item?.tags || []).join(', ')} /></div>
@@ -27,7 +31,7 @@ export default function ItemForm({ item, categories, categoryId }) {
       <div className="checks">
         <label><input type="checkbox" name="available" defaultChecked={item ? item.available : true} /> Available</label>
         <label><input type="checkbox" name="vegetarian" defaultChecked={item?.vegetarian} /> Vegetarian</label>
-        <label><input type="checkbox" name="featured" defaultChecked={item?.featured} /> Popular (shown on home page)</label>
+        <label><input type="checkbox" name="featured" defaultChecked={item?.featured} /> Show on the home page menu</label>
       </div>
       <div className="row">
         <SubmitButton className="btn sm">{item ? 'Save changes' : 'Add dish'}</SubmitButton>

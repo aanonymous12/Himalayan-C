@@ -5,6 +5,7 @@ import SiteChrome from '@/components/SiteChrome';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import CartDrawer from '@/components/CartDrawer';
+import { getSession } from '@/lib/auth';
 
 const display = Cormorant_Garamond({ weight: ['500', '600', '700'], subsets: ['latin'], variable: '--font-display', display: 'swap' });
 const body = Figtree({ subsets: ['latin'], variable: '--font-body', display: 'swap' });
@@ -21,10 +22,12 @@ export const metadata = {
 
 export const viewport = { width: 'device-width', initialScale: 1, themeColor: '#2b1810', colorScheme: 'light' };
 
-export default function RootLayout({ children }) {
+export default async function RootLayout({ children }) {
+  // An administrator signed in on this browser cannot place orders.
+  const { isAdmin } = await getSession();
   return (
     <html lang="en" className={`${display.variable} ${body.variable}`}>
-      <body><CartProvider>
+      <body><CartProvider blocked={isAdmin}>
           <SiteChrome header={<Header />} footer={<Footer />} drawer={<CartDrawer />}>{children}</SiteChrome>
         </CartProvider></body>
     </html>

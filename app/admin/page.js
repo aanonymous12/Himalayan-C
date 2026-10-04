@@ -1,80 +1,118 @@
 import Link from 'next/link';
+import AdminLogin from '@/components/AdminLogin';
 import AutoRefresh from '@/components/AutoRefresh';
-import { requireAdmin } from '@/lib/auth';
-import { money, dayKey, when, STATUS_LABEL } from '@/lib/format';
+import RangePicker from '@/components/admin/RangePicker';
+import SalesChart from '@/components/admin/SalesChart';
+import { getAdmin } from '@/lib/auth';
+import { parseRange, fetchOrders } from '@/lib/range';
+import { summarize, change } from '@/lib/stats';
+import { money, when, STATUS_LABEL } from '@/lib/format';
 
-export default async function Dashboard() {
-  const { sb } = await requireAdmin();
-  const since = new Date(Date.now() - 30 * 864e5).toISOString();
-  const { data: ordersData } = await sb.from('orders').select('*, order_items(name, qty, unit_price)').gte('created_at', since).order('created_at', { ascending: false });
-  const orders = ordersData ?? [];
-  const count = async (table, col, val) => (await sb.from(table).select('id', { count: 'exact', head: true }).eq(col, val)).count ?? 0;
-  const [pendingRes, newMsgs, openFeedback] = await Promise.all([count('reservations', 'status', 'pending'), count('messages', 'handled', false), count('feedback', 'resolved', false)]);
+const hourLabel = (h) => `${((h + 11) % 12) + 1} ${h < 12 ? 'AM' : 'PM'}`;
+const dateLabel = (iso) => new Date(`${iso}T12:00:00`).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 
-  const valid = orders.filter((o) => o.status !== 'cancelled');
-  const sum = (list) => list.reduce((n, o) => n + Number(o.total), 0);
-  const today = dayKey(new Date());
-  const todays = valid.filter((o) => dayKey(o.created_at) === today);
-  const open = orders.filter((o) => ['new', 'preparing', 'ready'].includes(o.status));
+function Delta({ now, before }) {
+  const c = change(now, before);
+  if (c === null) return <span className="delta flat">no earlier data</span>;
+  return <span className={`delta ${c >= 0 ? 'up' : 'down'}`}>{c >= 0 ? '\u25B2' : '\u25BC'} {Math.abs(c).toFixed(0)}% vs previous</span>;
+}
 
-  const days = Array.from({ length: 7 }, (_, i) => dayKey(new Date(Date.now() - (6 - i) * 864e5)));
-  const perDay = days.map((d) => ({ d, total: sum(valid.filter((o) => dayKey(o.created_at) === d)) }));
-  const max = Math.max(...perDay.map((x) => x.total), 1);
+export default async function Dashboard({ searchParams }) {
+  const admin = await getAdmin();
+  if (!admin) return <AdminLogin />;
+  const { sb } = admin;
+  const r = parseRange(await searchParams);
 
-  const tally = {};
-  valid.forEach((o) => o.order_items.forEach((i) => {
-    tally[i.name] = tally[i.name] || { qty: 0, sales: 0 };
-    tally[i.name].qty += i.qty; tally[i.name].sales += i.qty * Number(i.unit_price);
-  }));
-  const top = Object.entries(tally).sort((a, b) => b[1].qty - a[1].qty).slice(0, 8);
+  const count = async (table, col, val, op = 'eq') => (await sb.from(table).select('id', { count: 'exact', head: true })[op](col, val)).count ?? 0;
+  const [cur, prev, openOrders, pendingRes, newMsgs, openFeedback] = await Promise.all([
+    fetchOrders(sb, r.from, r.to, '*, order_items(name, qty, unit_price)'),
+    fetchOrders(sb, r.prevFrom, r.prevTo, 'id, created_at, status, total'),
+    count('orders', 'status', ['new', 'preparing', 'ready'], 'in'),
+    count('reservations', 'status', 'pending'),
+    count('messages', 'handled', false),
+    count('feedback', 'resolved', false),
+  ]);
+  const S = summarize(cur, r.days), P = summarize(prev, []);
+  const maxQty = Math.max(...S.top.map((t) => t.qty), 1);
+  const peak = Math.max(...S.hours.map((h) => h.orders), 1);
+  const used = S.hours.filter((h) => h.orders > 0).map((h) => h.hour);
+  const h0 = used.length ? Math.min(...used, 11) : 11, h1 = used.length ? Math.max(...used, 21) : 21;
+  const period = r.from === r.to ? dateLabel(r.from) : `${dateLabel(r.from)} \u2013 ${dateLabel(r.to)}`;
 
   return (
     <>
-      <AutoRefresh />
-      <h1 style={{ marginBottom: '1.5rem' }}>Dashboard</h1>
-      <div className="stats">
-        <div className="stat"><b>{open.length}</b>Open orders</div>
-        <div className="stat"><b>{money(sum(todays))}</b>Sales today ({todays.length} orders)</div>
-        <div className="stat"><b>{money(sum(valid.filter((o) => days.includes(dayKey(o.created_at)))))}</b>Last 7 days</div>
-        <div className="stat"><b>{money(sum(valid))}</b>Last 30 days ({valid.length} orders)</div>
+      <AutoRefresh seconds={60} />
+      <div className="page-head">
+        <div><h1>Dashboard</h1><p className="muted">{period} &middot; {r.days.length} {r.days.length === 1 ? 'day' : 'days'}</p></div>
+        <a className="btn sm line" href={`/admin/export?from=${r.from}&to=${r.to}`}>Download orders (CSV)</a>
+      </div>
+      <RangePicker r={r} />
+
+      <div className="todo">
+        <Link href="/admin/orders" className="todo-item"><b>{openOrders}</b><span>Open orders</span></Link>
+        <Link href="/admin/reservations" className="todo-item"><b>{pendingRes}</b><span>Reservations to confirm</span></Link>
+        <Link href="/admin/messages" className="todo-item"><b>{newMsgs}</b><span>Unhandled messages</span></Link>
+        <Link href="/admin/messages" className="todo-item"><b>{openFeedback}</b><span>Open feedback</span></Link>
       </div>
 
       <div className="stats">
-        <Link href="/admin/reservations" className="stat"><b>{pendingRes}</b>Reservations to confirm</Link>
-        <Link href="/admin/messages" className="stat"><b>{newMsgs}</b>Unhandled messages</Link>
-        <Link href="/admin/messages" className="stat"><b>{openFeedback}</b>Open feedback</Link>
+        <div className="stat"><span>Total sales</span><b>{money(S.revenue)}</b><Delta now={S.revenue} before={P.revenue} /></div>
+        <div className="stat"><span>Orders</span><b>{S.count}</b><Delta now={S.count} before={P.count} /></div>
+        <div className="stat"><span>Average order</span><b>{money(S.avg)}</b><span className="delta flat">{S.cancelled} cancelled</span></div>
+        <div className="stat"><span>Discounts given</span><b>{money(S.discount)}</b><span className="delta flat">Tax collected {money(S.tax)}</span></div>
       </div>
 
-      <div className="two" style={{ marginBottom: '2.5rem' }}>
-        <div>
-          <h2 style={{ fontSize: '1.3rem' }}>Sales by day</h2>
-          <div className="bars" style={{ marginTop: '1rem' }}>
-            {perDay.map((x) => (
-              <div className="bar" key={x.d}><span>{x.d.slice(5)}</span><i style={{ width: `${(x.total / max) * 100}%`, minWidth: x.total ? 4 : 0 }} /><span>{money(x.total)}</span></div>
-            ))}
-          </div>
+      <div className="panel">
+        <h2>Sales by day</h2>
+        {S.count === 0 ? <p className="muted">No orders in this period.</p> : <SalesChart data={S.byDay} />}
+      </div>
+
+      <div className="two">
+        <div className="panel">
+          <h2>Best-selling items</h2>
+          {S.top.length === 0 ? <p className="muted">Nothing sold in this period.</p> : (
+            <table>
+              <thead><tr><th>Dish</th><th>Sold</th><th>Sales</th></tr></thead>
+              <tbody>{S.top.map((t) => (
+                <tr key={t.name}><td>{t.name}<div className="meter"><i style={{ width: `${(t.qty / maxQty) * 100}%` }} /></div></td><td>{t.qty}</td><td>{money(t.sales)}</td></tr>
+              ))}</tbody>
+            </table>
+          )}
         </div>
-        <div>
-          <h2 style={{ fontSize: '1.3rem' }}>Best sellers, 30 days</h2>
-          <table style={{ marginTop: '.75rem' }}>
-            <thead><tr><th>Dish</th><th>Sold</th><th>Sales</th></tr></thead>
-            <tbody>{top.map(([n, v]) => <tr key={n}><td>{n}</td><td>{v.qty}</td><td>{money(v.sales)}</td></tr>)}
-              {!top.length && <tr><td colSpan={3} className="muted">Nothing yet. Orders will show up here.</td></tr>}</tbody>
+        <div className="panel">
+          <h2>Busiest hours</h2>
+          {S.count === 0 ? <p className="muted">No orders in this period.</p> : (
+            <div className="bars">
+              {S.hours.slice(h0, h1 + 1).map((h) => (
+                <div className="bar" key={h.hour}><span>{hourLabel(h.hour)}</span><i style={{ width: `${(h.orders / peak) * 100}%`, minWidth: h.orders ? 4 : 0 }} /><span>{h.orders}</span></div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {S.promos.length > 0 && (
+        <div className="panel">
+          <h2>Promo codes used</h2>
+          <table><thead><tr><th>Code</th><th>Orders</th><th>Discount given</th></tr></thead>
+            <tbody>{S.promos.map((p) => <tr key={p.code}><td><b>{p.code}</b></td><td>{p.uses}</td><td>{money(p.discount)}</td></tr>)}</tbody></table>
+        </div>
+      )}
+
+      <div className="panel">
+        <div className="row" style={{ justifyContent: 'space-between' }}>
+          <h2>Latest orders</h2>
+          <Link href={`/admin/orders?from=${r.from}&to=${r.to}`} className="btn sm line">All orders in this period</Link>
+        </div>
+        {cur.length === 0 ? <p className="muted">No orders in this period.</p> : (
+          <table>
+            <thead><tr><th>#</th><th>When</th><th>Customer</th><th>Status</th><th>Total</th></tr></thead>
+            <tbody>{cur.slice(0, 8).map((o) => (
+              <tr key={o.id}><td>{o.order_number}</td><td>{when(o.created_at)}</td><td>{o.customer_name}</td><td><span className={`status ${o.status}`}>{STATUS_LABEL[o.status]}</span></td><td>{money(o.total)}</td></tr>
+            ))}</tbody>
           </table>
-        </div>
+        )}
       </div>
-
-      <div className="row" style={{ justifyContent: 'space-between' }}>
-        <h2 style={{ fontSize: '1.3rem' }}>Latest orders</h2><Link href="/admin/orders">All orders</Link>
-      </div>
-      <table style={{ marginTop: '.75rem' }}>
-        <thead><tr><th>#</th><th>When</th><th>Customer</th><th>Status</th><th>Total</th></tr></thead>
-        <tbody>
-          {orders.slice(0, 8).map((o) => (
-            <tr key={o.id}><td>{o.order_number}</td><td>{when(o.created_at)}</td><td>{o.customer_name}{o.user_id ? '' : ' (guest)'}</td><td><span className={`status ${o.status}`}>{STATUS_LABEL[o.status]}</span></td><td>{money(o.total)}</td></tr>
-          ))}
-        </tbody>
-      </table>
     </>
   );
 }

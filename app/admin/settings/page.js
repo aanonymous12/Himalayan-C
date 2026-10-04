@@ -3,6 +3,7 @@ import MediaUpload from '@/components/admin/MediaUpload';
 import { requireAdmin } from '@/lib/auth';
 import { getSettings } from '@/lib/settings';
 import { closedDays } from '@/lib/format';
+import PasswordForm from '@/components/PasswordForm';
 import { saveSettings } from '../actions';
 
 const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -47,6 +48,7 @@ export default async function AdminSettings() {
             <div className="field"><label htmlFor="open_time">Opens (for reservation times)</label><input id="open_time" name="open_time" type="time" defaultValue={s.open_time} /></div>
             <div className="field"><label htmlFor="close_time">Closes</label><input id="close_time" name="close_time" type="time" defaultValue={s.close_time} /></div>
           </div>
+          <div className="field"><label htmlFor="closed_dates">Closed on specific dates (holidays, private events)</label><input id="closed_dates" name="closed_dates" defaultValue={s.closed_dates} placeholder="2026-12-25, 2027-01-01" /><span className="hint">Format 2026-12-25, separated by commas. Guests cannot reserve on these dates.</span></div>
           <div className="field"><span className="lbl">Closed on</span>
             <div className="checks">{DAYS.map((d, i) => <label key={d}><input type="checkbox" name="closed" value={i} defaultChecked={closed.includes(i)} /> {d}</label>)}</div></div>
 
@@ -64,6 +66,7 @@ export default async function AdminSettings() {
           <SubmitButton className="btn">Save settings</SubmitButton>
         </div>
       </ActionForm>
+      <div className="panel" id="password" style={{ maxWidth: 700, marginTop: '2.5rem' }}><PasswordForm heading="Change your password" /></div>
     </>
   );
 }

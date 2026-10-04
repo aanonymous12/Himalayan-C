@@ -1,5 +1,19 @@
 # Progress log: Himalayan Nepalese & Indian Cuisine
 
+## Revision 6: single-page site, admin-only login, promo codes, business card
+- **Navigation** (all anchors on the home page): Home, About Us, Menu, Gallery, Reservation, Testimonial, Contact Us, plus an Order Now button.
+- **Home page sections**: About (text and image only), Menu (dishes the admin ticks "Show on the home page menu", with Add to cart; "See full menu" opens `/menu`), Gallery, Reservation (tabs for table reservation and catering), Testimonials, Contact (form, details, map), proper footer.
+- **No customer accounts**: no signup, no customer login, guest checkout only. Old `/login`, `/account`, `/about` etc. redirect so old links never break.
+- **Admin login lives at `/admin`** and nothing links to it (also not listed in robots.txt). One sign-in screen: admins see the dashboard, anyone else is turned away. The public nav never shows an admin item.
+- **Admins cannot order** (blocked in the cart, at checkout and again on the server).
+- **Promo codes** (Dashboard > Promo codes): percent or dollar discounts, minimum order, start and expiry dates, total uses allowed, uses per customer (by phone), on/off switch, usage and money given shown per code. Validated on the server twice (preview and when the order is placed, including a last-second recount).
+- **Spice level, add-ons and special instructions** per dish: customers get a Customize dialog. Prices are always recalculated on the server.
+- **Reservations**: admin can add phone bookings, edit or reschedule any reservation and email the guest; closed days plus specific closed dates and opening hours in Settings.
+- **Dashboard**: pick a date range (presets or custom). Total sales with comparison to the previous period, orders, average order, discounts, tax, sales by day chart, best-selling items, busiest hours, promo usage, latest orders, and a CSV download. Orders page has the same range picker, status filter and search.
+- **Business card** at `/connect` (also `/Connect`): cover photo, logo, name, tagline, intro, Save contact (.vcf), Share, order / reserve / call / directions / review buttons, social links, contact rows. Everything editable in Dashboard > Business card.
+- Tested here: pricing, promo rules, date ranges and sales statistics (unit tests), every route, and the generated HTML. Not tested against a live Supabase project.
+
+
 **Stack (one framework):** Next.js 15 (App Router, React 19) on Vercel, Supabase (Postgres, Auth, Storage). No online payment: customers pay at the restaurant.
 
 ## Revision 5: polish, login and dashboard

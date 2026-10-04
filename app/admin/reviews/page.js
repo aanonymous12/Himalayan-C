@@ -10,7 +10,7 @@ export default async function AdminReviews() {
   const list = data ?? [];
   return (
     <>
-      <h1 style={{ marginBottom: '.5rem' }}>Reviews</h1>
+      <h1 style={{ marginBottom: ".5rem" }}>Testimonials</h1>
       <p className="muted">Add real guest reviews to show on the home and Reviews pages. Only add reviews from real customers.</p>
       <details className="edit" open={list.length === 0} style={{ margin: '1.25rem 0 2rem' }}>
         <summary><b>Add a review</b></summary>

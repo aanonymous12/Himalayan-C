@@ -7,8 +7,8 @@ import SignOut from '../SignOut';
 
 const NAV = [
   ['Overview', [['/admin', 'Dashboard', 'grid'], ['/admin/orders', 'Orders', 'bag'], ['/admin/reservations', 'Reservations', 'calendar'], ['/admin/messages', 'Inbox', 'inbox']]],
-  ['Website content', [['/admin/menu', 'Menu', 'utensils'], ['/admin/gallery', 'Gallery', 'image'], ['/admin/reviews', 'Reviews', 'star'], ['/admin/blog', 'Journal', 'pen']]],
-  ['Configuration', [['/admin/settings', 'Settings', 'gear']]],
+  ['Website', [['/admin/menu', 'Menu', 'utensils'], ['/admin/promos', 'Promo codes', 'tag'], ['/admin/gallery', 'Gallery', 'image'], ['/admin/reviews', 'Testimonials', 'star'], ['/admin/blog', 'Journal', 'pen']]],
+  ['Configuration', [['/admin/connect', 'Business card', 'card'], ['/admin/settings', 'Settings', 'gear']]],
 ];
 
 export default function AdminShell({ email, children }) {
@@ -41,7 +41,7 @@ export default function AdminShell({ email, children }) {
           <div className="row" style={{ gap: '1rem' }}>
             <Link href="/" target="_blank" className="adm-link"><Icon name="external" size={17} /><span>View website</span></Link>
             <span className="adm-user">{email}</span>
-            <Link href="/account" className="adm-link"><span>Password</span></Link>
+            <Link href="/admin/settings#password" className="adm-link"><span>Password</span></Link>
             <SignOut className="adm-link adm-out" />
           </div>
         </header>
