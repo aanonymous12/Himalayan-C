@@ -42,14 +42,14 @@ export default async function Connect() {
         <div className="cc-avatar">{c.logo_url ? <img src={c.logo_url} alt={name} /> : <span>{name.slice(0, 1)}</span>}</div>
         <header className="cc-head">
           <h1>{name}</h1>
-          {(c.tagline || 'Nepalese & Indian Cuisine') && <p className="cc-tag">{c.tagline || 'Nepalese & Indian Cuisine'}</p>}
+          {(c.tagline || 'Fresh Himalayan cooking') && <p className="cc-tag">{c.tagline || 'Fresh Himalayan cooking'}</p>}
           <p className="cc-place"><Icon name="pin" size={15} />{place}</p>
           {bio && <p className="cc-bio">{bio}</p>}
         </header>
 
         <div className="cc-actions">
           <a href="/connect/vcard" className="cc-btn primary"><Icon name="user" size={20} /><span>Save contact</span></a>
-          <ShareButton title={name} text={`${name} - ${c.tagline || 'Nepalese & Indian Cuisine'}`} />
+          <ShareButton title={name} text={`${name} - ${c.tagline || 'Fresh Himalayan cooking'}`} />
         </div>
 
         {actions.length > 0 && (
@@ -80,7 +80,7 @@ export default async function Connect() {
           <div className="cc-row"><span className="cc-ico"><Icon name="clock" size={20} /></span><span><small>Hours</small><span className="pre">{s.hours}</span></span></div>
         </section>
 
-        <footer className="cc-foot"><Link href="/">Visit our website</Link></footer>
+        <div className="cc-foot"><Link href="/">Visit our website</Link></div>
       </article>
     </div>
   );

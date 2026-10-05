@@ -13,15 +13,22 @@ export default function AddToCart({ item }) {
   const [sel, setSel] = useState([]);
   const [note, setNote] = useState('');
   const [done, setDone] = useState(false);
+  const [warn, setWarn] = useState(false);
   const dlg = useRef(null);
 
   const chosen = extras.filter((e) => sel.includes(e.label));
   const unit = Number(opts.length ? opts[pick].price : item.price) + chosen.reduce((n, e) => n + Number(e.price), 0);
   const low = opts.length ? Math.min(...opts.map((o) => Number(o.price))) : Number(item.price);
 
+  // Administrators see the normal button, but ordering is off for them. Tell them why instead of failing silently.
+  const guard = (fn) => () => {
+    if (blocked) { setWarn(true); setTimeout(() => setWarn(false), 4000); return; }
+    fn();
+  };
+
   function commit() {
     add({
-      itemId: item.id, name: item.name, option: opts[pick]?.label || null,
+      itemId: item.id, name: item.name, image: item.image_url || null, option: opts[pick]?.label || null,
       spice: spices.length ? spice : null,
       addons: chosen.map((e) => ({ label: e.label, price: Number(e.price) })),
       note: note.trim() || null, price: unit,
@@ -29,10 +36,10 @@ export default function AddToCart({ item }) {
     dlg.current?.close();
     setNote(''); setSel([]);
     setDone(true);
-    setTimeout(() => setDone(false), 1200);
+    setTimeout(() => setDone(false), 1400);
   }
 
-  if (blocked) return <button className="btn sm" disabled title="Administrator accounts cannot place orders">Admin view</button>;
+  const warning = warn && <span className="warn" role="alert">Admins cannot order. Log out to test.</span>;
 
   if (!custom) return (
     <>
@@ -41,14 +48,16 @@ export default function AddToCart({ item }) {
           {opts.map((o, i) => <option key={o.label} value={i}>{o.label} - {money(o.price)}</option>)}
         </select>
       ) : <span className="price">{money(item.price)}</span>}
-      <button className="btn sm rust" onClick={commit}>{done ? 'Added' : 'Add'}</button>
+      <button type="button" className={`btn sm ${done ? 'gold' : 'rust'}`} onClick={guard(commit)}>{done ? '\u2713 Added' : 'Add to cart'}</button>
+      {warning}
     </>
   );
 
   return (
     <>
       <span className="price">{opts.length ? `From ${money(low)}` : money(item.price)}</span>
-      <button className="btn sm rust" onClick={() => dlg.current?.showModal()}>{done ? 'Added' : 'Customize'}</button>
+      <button type="button" className={`btn sm ${done ? 'gold' : 'rust'}`} onClick={guard(() => dlg.current?.showModal())}>{done ? '\u2713 Added' : 'Add to cart'}</button>
+      {warning}
       <dialog ref={dlg} className="mod" onClick={(e) => e.target === dlg.current && dlg.current.close()} aria-label={`Customize ${item.name}`}>
         <div className="mod-body">
           <div className="mod-head"><h3>{item.name}</h3><button type="button" className="icon-btn" onClick={() => dlg.current.close()} aria-label="Close">&times;</button></div>
@@ -77,7 +86,7 @@ export default function AddToCart({ item }) {
           )}
           <div className="field"><label htmlFor={`n-${item.id}`}>Special instructions (optional)</label>
             <textarea id={`n-${item.id}`} rows={2} maxLength={200} value={note} onChange={(e) => setNote(e.target.value)} placeholder="Allergies, no onions, extra sauce..." /></div>
-          <button type="button" className="btn gold" style={{ width: '100%' }} onClick={commit}>Add to order &middot; {money(unit)}</button>
+          <button type="button" className="btn gold" style={{ width: '100%' }} onClick={commit}>Add to cart &middot; {money(unit)}</button>
         </div>
       </dialog>
     </>

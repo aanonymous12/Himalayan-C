@@ -3,10 +3,11 @@ import { useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useCart } from './CartProvider';
-import { money } from '@/lib/format';
 import LineDetails from './LineDetails';
+import Thumb from './Thumb';
+import { money } from '@/lib/format';
 
-// Slide-over cart plus a floating "View order" bar, like the big ordering sites.
+// Slide-over cart plus a floating "View cart" bar, the way the big ordering sites do it.
 export default function CartDrawer() {
   const { items, setQty, subtotal, count, open, setOpen, ready, blocked } = useCart();
   const path = usePathname();
@@ -26,40 +27,50 @@ export default function CartDrawer() {
   return (
     <>
       {ready && count > 0 && !open && !onCheckout && (
-        <button className="cartbar" onClick={() => setOpen(true)}>
-          <span>View order <b>({count})</b></span><span>{money(subtotal)}</span>
+        <button className="cartbar" onClick={() => setOpen(true)} aria-label={`View cart, ${count} items, ${money(subtotal)}`}>
+          <span>View cart <b>({count})</b></span><span>{money(subtotal)}</span>
         </button>
       )}
       {open && <div className="drawer-ov" onClick={() => setOpen(false)} />}
-      <aside className={`drawer${open ? ' open' : ''}`} role="dialog" aria-modal="true" aria-label="Your order" aria-hidden={!open}>
+      <aside className={`drawer${open ? ' open' : ''}`} role="dialog" aria-modal="true" aria-label="Your cart" aria-hidden={!open}>
         <div className="drawer-head">
-          <h2>Your order</h2>
+          <h2>Your cart {count > 0 && <span className="muted">({count})</span>}</h2>
           <button ref={closeBtn} className="icon-btn" onClick={() => setOpen(false)} aria-label="Close cart" tabIndex={open ? 0 : -1}>&times;</button>
         </div>
         <div className="drawer-body">
           {items.length === 0 ? (
-            <div className="drawer-empty"><p><b>Your cart is empty</b></p><p className="muted">Add a few dishes from the menu to get started.</p>
-              <Link href="/menu" className="btn rust" onClick={() => setOpen(false)}>Browse the menu</Link></div>
+            <div className="drawer-empty">
+              <p><b>Your cart is empty</b></p>
+              <p className="muted">Add a few dishes from the menu to get started.</p>
+              <Link href="/menu" className="btn rust" onClick={() => setOpen(false)}>Browse the menu</Link>
+            </div>
           ) : items.map((i) => (
             <div className="cart-line" key={i.key}>
-              <div><b>{i.name}</b><LineDetails line={i} />
-                <div className="qty" style={{ marginTop: '.5rem' }}>
-                  <button type="button" onClick={() => setQty(i.key, i.qty - 1)} aria-label={`One less ${i.name}`}>&minus;</button>
-                  <span aria-live="polite">{i.qty}</span>
-                  <button type="button" onClick={() => setQty(i.key, i.qty + 1)} aria-label={`One more ${i.name}`}>+</button>
-                  <button type="button" className="link-btn" onClick={() => setQty(i.key, 0)}>Remove</button>
+              <Thumb src={i.image} name={i.name} />
+              <div className="cl-main">
+                <div className="nm">{i.name}</div>
+                <LineDetails line={i} />
+                <div className="cl-tools">
+                  <div className="stepper">
+                    <button type="button" onClick={() => setQty(i.key, i.qty - 1)} aria-label={`One less ${i.name}`}>&minus;</button>
+                    <span aria-live="polite">{i.qty}</span>
+                    <button type="button" onClick={() => setQty(i.key, i.qty + 1)} aria-label={`One more ${i.name}`}>+</button>
+                  </div>
+                  <button type="button" className="remove" onClick={() => setQty(i.key, 0)}>Remove</button>
                 </div>
               </div>
-              <b>{money(i.price * i.qty)}</b>
+              <b className="cl-price">{money(i.price * i.qty)}</b>
             </div>
           ))}
         </div>
         {items.length > 0 && (
           <div className="drawer-foot">
-            <div className="totals"><div><span>Subtotal</span><b>{money(subtotal)}</b></div></div>
-            <p className="hint" style={{ margin: '.4rem 0 1rem' }}>Tax is added at checkout. You pay at the restaurant.</p>
-            {blocked ? <p className="error">Administrator accounts cannot place orders.</p> : <Link href="/checkout" className="btn gold" style={{ width: '100%' }} onClick={() => setOpen(false)}>Checkout</Link>}
-            <button className="btn line" style={{ width: '100%', marginTop: '.6rem' }} onClick={() => setOpen(false)}>Continue ordering</button>
+            <div className="totals"><div className="grand" style={{ border: 0, paddingTop: 0, marginTop: 0 }}><span>Subtotal</span><span>{money(subtotal)}</span></div></div>
+            <p className="hint" style={{ margin: '.3rem 0 1rem' }}>Tax and promo codes are applied at checkout. You pay at the restaurant.</p>
+            {blocked
+              ? <p className="error">Administrator accounts cannot place orders.</p>
+              : <Link href="/checkout" className="btn gold block" onClick={() => setOpen(false)}>Go to checkout</Link>}
+            <button className="btn line block" style={{ marginTop: '.6rem' }} onClick={() => setOpen(false)}>Continue shopping</button>
           </div>
         )}
       </aside>

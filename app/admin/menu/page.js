@@ -62,7 +62,7 @@ export default async function AdminMenu() {
                     <span><b>{i.name}</b>
                       {!i.available && <span className="chip-s red">Sold out</span>}
                       {i.vegetarian && <span className="chip-s">Veg</span>}
-                      {i.featured && <span className="chip-s gold">Popular</span>}</span>
+                      {i.featured && <span className="chip-s gold">On home page</span>}</span>
                   </span>
                   <span className="muted">{priceText(i)}</span>
                 </summary>

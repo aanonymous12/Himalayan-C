@@ -24,7 +24,7 @@ export default async function AdminConnect() {
           <MediaUpload name="logo_url" label="Logo or round photo" kind="image" initial={c.logo_url} hint="A square image works best. Leave empty to show the first letter of your name." />
           <div className="grid2">
             <div className="field"><label>Name on the card</label><input name="name" maxLength={60} defaultValue={c.name || ''} placeholder={s.business_name} /></div>
-            <div className="field"><label>Tagline</label><input name="tagline" maxLength={60} defaultValue={c.tagline || ''} placeholder="Nepalese & Indian Cuisine" /></div>
+            <div className="field"><label>Tagline</label><input name="tagline" maxLength={60} defaultValue={c.tagline || ''} placeholder="Fresh Himalayan cooking" /></div>
           </div>
           <div className="field"><label>Short intro</label><textarea name="bio" rows={3} maxLength={400} defaultValue={c.bio || ''} placeholder="Leave empty to use your story from Settings." /></div>
 
