@@ -27,6 +27,7 @@ const P = {
   tag: <><path d="M3 12V4h8l10 10-8 8z" /><circle cx="7.5" cy="8.5" r="1.3" fill="currentColor" /></>,
   card: <><rect x="3" y="5" width="18" height="14" rx="2" /><circle cx="9" cy="11" r="2.2" /><path d="M5.5 16c.5-1.8 2-2.5 3.5-2.5s3 .7 3.5 2.5M15 10h4M15 13h3" /></>,
   chevron: <path d="m9 6 6 6-6 6" />,
+  cart: <><circle cx="9" cy="20" r="1.6" /><circle cx="18" cy="20" r="1.6" /><path d="M2.5 3.5h3l2.4 11.6a1.2 1.2 0 0 0 1.2 1h9.2a1.2 1.2 0 0 0 1.2-.9L21 7.5H6.2" /></>,
   play: <path d="M8 5v14l11-7z" fill="currentColor" />,
 };
 export default function Icon({ name, size = 24 }) {

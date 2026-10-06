@@ -7,12 +7,11 @@ import LineDetails from './LineDetails';
 import Thumb from './Thumb';
 import { money } from '@/lib/format';
 
-// Slide-over cart plus a floating "View cart" bar, the way the big ordering sites do it.
+// Slide-over cart. It opens from the cart icon in the header.
 export default function CartDrawer() {
-  const { items, setQty, subtotal, count, open, setOpen, ready, blocked } = useCart();
+  const { items, setQty, subtotal, count, open, setOpen, blocked } = useCart();
   const path = usePathname();
   const closeBtn = useRef(null);
-  const onCheckout = path === '/checkout' || path.startsWith('/order/');
 
   useEffect(() => { setOpen(false); }, [path, setOpen]);
   useEffect(() => {
@@ -26,11 +25,6 @@ export default function CartDrawer() {
 
   return (
     <>
-      {ready && count > 0 && !open && !onCheckout && (
-        <button className="cartbar" onClick={() => setOpen(true)} aria-label={`View cart, ${count} items, ${money(subtotal)}`}>
-          <span>View cart <b>({count})</b></span><span>{money(subtotal)}</span>
-        </button>
-      )}
       {open && <div className="drawer-ov" onClick={() => setOpen(false)} />}
       <aside className={`drawer${open ? ' open' : ''}`} role="dialog" aria-modal="true" aria-label="Your cart" aria-hidden={!open}>
         <div className="drawer-head">
