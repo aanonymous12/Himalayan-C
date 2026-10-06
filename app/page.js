@@ -8,7 +8,6 @@ import ReservationForm from '@/components/ReservationForm';
 import CateringForm from '@/components/CateringForm';
 import ActionForm, { SubmitButton } from '@/components/ActionForm';
 import Icon from '@/components/Icon';
-import CtaBand from '@/components/CtaBand';
 import InfoList, { MapEmbed, directionsUrl } from '@/components/InfoList';
 import { submitContact } from '@/app/actions';
 import { createClient } from '@/lib/supabase/server';
@@ -167,7 +166,6 @@ export default async function Home() {
         <div className="wrap" style={{ marginTop: '2.5rem' }}><MapEmbed s={s} /></div>
       </section>
 
-      <CtaBand />
     </>
   );
 }

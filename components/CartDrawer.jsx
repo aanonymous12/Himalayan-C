@@ -62,7 +62,7 @@ export default function CartDrawer() {
             <div className="totals"><div className="grand" style={{ border: 0, paddingTop: 0, marginTop: 0 }}><span>Subtotal</span><span>{money(subtotal)}</span></div></div>
             <p className="hint" style={{ margin: '.3rem 0 1rem' }}>Tax and promo codes are applied at checkout. You pay at the restaurant.</p>
             {blocked
-              ? <p className="error">Administrator accounts cannot place orders.</p>
+              ? <p className="error">You cannot place an order as admin.</p>
               : <Link href="/checkout" className="btn gold block" onClick={() => setOpen(false)}>Go to checkout</Link>}
             <button className="btn line block" style={{ marginTop: '.6rem' }} onClick={() => setOpen(false)}>Continue shopping</button>
           </div>

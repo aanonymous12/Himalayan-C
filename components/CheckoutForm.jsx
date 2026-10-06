@@ -2,6 +2,7 @@
 import { useEffect, useMemo, useState, useTransition } from 'react';
 import Link from 'next/link';
 import { useCart } from './CartProvider';
+import OrderSteps from './OrderSteps';
 import LineDetails from './LineDetails';
 import Thumb from './Thumb';
 import { placeOrder, checkPromo } from '@/app/checkout/actions';
@@ -84,10 +85,11 @@ export default function CheckoutForm({ taxRate, accepting, phoneShown, hours, op
   return (
     <div className="wrap co">
       <h1 style={{ marginBottom: '.4rem' }}>Checkout</h1>
-      <p className="muted" style={{ marginBottom: '1.75rem' }}>Guest checkout. No account needed, and you pay at the restaurant.</p>
+      <p className="muted" style={{ marginBottom: '1rem' }}>Guest checkout. No account needed, and you pay at the restaurant.</p>
+      <OrderSteps current={2} />
       <div className="co-grid">
         <form id="checkout-form" onSubmit={submit}>
-          {blocked && <div className="error" role="alert">You are signed in as an administrator, so ordering is turned off on this device.</div>}
+          {blocked && <div className="error" role="alert">You cannot place an order as admin.</div>}
           {!accepting && <div className="error" role="alert">Online ordering is paused right now. Please call {phoneShown}.</div>}
           {!openNow && <div className="notice-box" role="status"><b>We are closed right now.</b> Hours: <span className="pre">{hours}</span> You can still order and we will prepare it when we open.</div>}
           {error && <div className="error" role="alert">{error}</div>}

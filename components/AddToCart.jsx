@@ -39,7 +39,7 @@ export default function AddToCart({ item }) {
     setTimeout(() => setDone(false), 1400);
   }
 
-  const warning = warn && <span className="warn" role="alert">Admins cannot order. Log out to test.</span>;
+  const warning = warn && <span className="warn" role="alert">You cannot place an order as admin.</span>;
 
   if (!custom) return (
     <>

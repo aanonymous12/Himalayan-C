@@ -1,6 +1,5 @@
 import PageHero from '@/components/PageHero';
 import GalleryGrid from '@/components/GalleryGrid';
-import CtaBand from '@/components/CtaBand';
 import { createClient } from '@/lib/supabase/server';
 
 export const metadata = {
@@ -16,7 +15,6 @@ export default async function Gallery() {
     <>
       <PageHero title="Gallery" sub="Our food, our restaurant, our events." />
       <section className="section"><div className="wrap"><GalleryGrid items={data ?? []} /></div></section>
-      <CtaBand />
     </>
   );
 }

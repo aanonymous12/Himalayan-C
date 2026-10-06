@@ -32,7 +32,7 @@ export async function checkPromo(payload) {
 // Prices always come from the database. The browser only says what and how many.
 export async function placeOrder(payload) {
   return run(payload, undefined, async (p) => {
-    if (await getAdmin()) return { error: 'Administrator accounts cannot place orders. Log out of the dashboard to order as a customer.' };
+    if (await getAdmin()) return { error: 'You cannot place an order as admin.' };
 
     const name = String(p?.name || '').trim().slice(0, 80);
     const phone = String(p?.phone || '').trim().slice(0, 30);

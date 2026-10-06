@@ -1,6 +1,5 @@
 'use client';
 import { usePathname } from 'next/navigation';
-import AdminNotice from './AdminNotice';
 
 // Public pages get the header, footer and cart. The dashboard and the business-card page have their own look.
 export default function SiteChrome({ header, footer, drawer, children }) {
@@ -9,7 +8,6 @@ export default function SiteChrome({ header, footer, drawer, children }) {
   return (
     <>
       <a href="#main" className="skip">Skip to content</a>
-      <AdminNotice />
       {header}
       <main id="main">{children}</main>
       {footer}

@@ -1,7 +1,6 @@
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import PageHero from '@/components/PageHero';
-import CtaBand from '@/components/CtaBand';
 import { createClient } from '@/lib/supabase/server';
 import { dateLong } from '@/lib/format';
 
@@ -37,7 +36,6 @@ export default async function Post({ params }) {
         {p.cover_url && <img src={p.cover_url} alt="" className="media" style={{ marginBottom: '2.5rem', maxWidth: 900, marginInline: 'auto', aspectRatio: '16 / 9' }} />}
         <div className="prose"><Body text={p.body} /><p><Link href="/blog">Back to the journal</Link></p></div>
       </div></article>
-      <CtaBand />
     </>
   );
 }

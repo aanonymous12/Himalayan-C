@@ -1,7 +1,5 @@
-import DishCard from '@/components/DishCard';
-import MenuNav from '@/components/MenuNav';
-import PageHero from '@/components/PageHero';
-import CtaBand from '@/components/CtaBand';
+import OrderMenu from '@/components/OrderMenu';
+import OrderSteps from '@/components/OrderSteps';
 import { createClient } from '@/lib/supabase/server';
 import { getSettings } from '@/lib/settings';
 
@@ -21,24 +19,14 @@ export default async function MenuPage() {
   const shown = (cats || []).filter((c) => items?.some((i) => i.category_id === c.id));
 
   return (
-    <>
-      <PageHero title="Our menu" sub="Cooked fresh to order. Add dishes to start an order for pickup." />
-      <MenuNav cats={shown} />
-      <div className="wrap">
-        <p className="muted" style={{ marginTop: '1.5rem' }}><span className="veg" style={{ marginRight: 8 }} />Vegetarian. Please tell us about allergies when you order.</p>
-        {!s.accepting_orders && <div className="error" style={{ marginTop: '1rem' }}>We are not taking online orders right now. Please call {s.phone}.</div>}
-        {shown.map((c) => (
-          <section key={c.id} id={`m-${c.slug}`} className="cat">
-            <h2>{c.name}</h2>
-            {c.description && <p>{c.description}</p>}
-            <div className="dish-grid">
-              {items.filter((i) => i.category_id === c.id).map((i) => <DishCard key={i.id} item={i} slug={c.slug} canOrder={s.accepting_orders} />)}
-            </div>
-          </section>
-        ))}
+    <div className="order-page">
+      <div className="wrap order-head">
+        <h1>Order online</h1>
+        <p className="muted">Fresh to order for pickup. <span className="veg" style={{ margin: '0 6px 0 4px' }} />Vegetarian. Please tell us about allergies.</p>
+        <OrderSteps current={1} />
+        {!s.accepting_orders && <div className="error">We are not taking online orders right now. Please call {s.phone}.</div>}
       </div>
-      <div style={{ height: '4rem' }} />
-      <CtaBand title="Ready to order?" text="Review your cart and check out as a guest or with an account." href="/checkout" label="Go to checkout" />
-    </>
+      <OrderMenu cats={shown} items={items || []} canOrder={s.accepting_orders} />
+    </div>
   );
 }

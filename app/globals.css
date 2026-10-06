@@ -495,3 +495,34 @@ footer .legal { display: flex; justify-content: space-between; gap: 1rem; flex-w
 
 .cc-foot { background: none; border: 0; color: var(--muted); padding: 0; }
 @media (max-width: 560px) { .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .6rem; } .stat { padding: .85rem; } .stat b { font-size: 1.45rem; } }
+
+/* Ordering layout: step pills, category pills, product grid and sticky cart */
+.steps-pills { list-style: none; display: flex; flex-wrap: wrap; gap: .5rem; padding: 0; margin: 1rem 0 1.5rem; }
+.steps-pills li { border: 1px solid var(--line); border-radius: 99px; font-weight: 700; font-size: .95rem; background: #fff; color: var(--muted); }
+.steps-pills li > * { display: block; padding: .5rem 1.15rem; color: inherit; text-decoration: none; }
+.steps-pills li.on { background: var(--rust); border-color: var(--rust); color: #fff; }
+.steps-pills li.done { color: var(--rust); border-color: var(--rust); }
+.order-page { padding-bottom: 4rem; }
+.order-head { padding-top: clamp(1.75rem, 4vw, 3rem); }
+.order-head h1 { font-size: clamp(2.2rem, 5vw, 3.2rem); margin-bottom: .3rem; }
+.order-layout { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: clamp(1.25rem, 3vw, 2.25rem); align-items: start; }
+.cat-pills { display: flex; flex-wrap: wrap; gap: .5rem; }
+.order-main .cat { padding-top: 2rem; scroll-margin-top: calc(var(--hh) + 1rem); }
+.order-main .cat:first-of-type { padding-top: 1.5rem; }
+.order-main .dish-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.1rem; margin-top: 1rem; }
+.cart-panel { position: sticky; top: calc(var(--hh) + 1rem); background: #fff; border: 1px solid var(--line); border-radius: 16px; padding: 1.25rem; max-height: calc(100svh - var(--hh) - 2rem); overflow-y: auto; }
+.cart-panel h2 { font-family: var(--font-body), sans-serif; font-weight: 700; font-size: 1.2rem; margin-bottom: .75rem; }
+.cp-empty { margin: 0; }
+.cp-line { padding: .85rem 0; border-top: 1px solid var(--line); }
+.cp-top { display: flex; justify-content: space-between; gap: .6rem; align-items: flex-start; }
+.cp-line .nm { font-weight: 700; }
+.cp-x { background: none; border: 0; font-size: 1.4rem; line-height: 1; color: var(--muted); cursor: pointer; padding: 0 .3rem; }
+.cp-x:hover { color: var(--red); }
+.cp-bot { display: flex; justify-content: space-between; align-items: center; margin-top: .55rem; }
+.cp-sub { display: flex; justify-content: space-between; border-top: 1px solid var(--line); padding-top: .9rem; font-size: 1.05rem; }
+.cart-panel .btn.block { display: flex; justify-content: center; width: 100%; min-height: 52px; font-size: 1.05rem; }
+@media (max-width: 1000px) {
+  .order-layout { grid-template-columns: minmax(0, 1fr); }
+  .cart-panel { display: none; }
+}
+@media (max-width: 560px) { .order-main .dish-grid { grid-template-columns: minmax(0, 1fr); } .cat-pills { flex-wrap: nowrap; overflow-x: auto; margin-inline: -1rem; padding-inline: 1rem; scrollbar-width: none; } }
