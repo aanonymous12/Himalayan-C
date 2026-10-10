@@ -7,7 +7,7 @@ import CartLink from './CartLink';
 // Every item jumps to a section of the home page. From other pages the links go back to the home page section.
 const LINKS = [
   ['home', 'Home'], ['about', 'About Us'], ['menu', 'Menu'], ['gallery', 'Gallery'],
-  ['reservation', 'Reservation'], ['testimonials', 'Testimonial'], ['contact', 'Contact Us'],
+  ['reservation', 'Reservation'], ['testimonials', 'Testimonial'], ['blog', 'Blog'], ['contact', 'Contact Us'],
 ];
 
 export default function Nav() {

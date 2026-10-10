@@ -2,6 +2,7 @@ import Link from 'next/link';
 import HeroVideo from '@/components/HeroVideo';
 import DishCard from '@/components/DishCard';
 import GalleryGrid from '@/components/GalleryGrid';
+import PostCard from '@/components/PostCard';
 import ReviewCards from '@/components/ReviewCards';
 import BookingTabs from '@/components/BookingTabs';
 import ReservationForm from '@/components/ReservationForm';
@@ -19,13 +20,18 @@ export const metadata = { alternates: { canonical: '/' } };
 export default async function Home() {
   const sb = await createClient();
   const s = await getSettings();
-  const [{ data: cats }, { data: picked }, { data: reviews }, homeGallery, { count: galleryTotal }] = await Promise.all([
+  const [{ data: cats }, { data: picked }, { data: reviews }, homeGallery, { count: galleryTotal }, homePosts, { count: postTotal }] = await Promise.all([
     sb.from('menu_categories').select('id,sort_order').eq('visible', true).order('sort_order'),
     sb.from('menu_items').select('*').eq('featured', true).order('sort_order'),
     sb.from('reviews').select('*').order('created_at', { ascending: false }),
     sb.from('gallery_items').select('*').eq('show_on_home', true).order('sort_order').order('created_at', { ascending: false }).limit(12),
     sb.from('gallery_items').select('id', { count: 'exact', head: true }),
+    sb.from('posts').select('title,slug,excerpt,cover_url,cover_alt,published_at,body').eq('show_on_home', true).order('published_at', { ascending: false }).limit(3),
+    sb.from('posts').select('id', { count: 'exact', head: true }),
   ]);
+  // Before the blog update has been applied to the database, show the newest articles instead.
+  let posts = homePosts.data;
+  if (homePosts.error) ({ data: posts } = await sb.from('posts').select('title,slug,excerpt,cover_url,published_at,body').order('published_at', { ascending: false }).limit(3));
   // Before the gallery update has been applied to the database, fall back to the newest photos.
   let gallery = homeGallery.data;
   if (homeGallery.error) ({ data: gallery } = await sb.from('gallery_items').select('*').order('sort_order').order('created_at', { ascending: false }).limit(8));
@@ -146,7 +152,15 @@ export default async function Home() {
         </div>
       </section>
 
-      <section id="contact" className="section soft">
+      <section id="blog" className="section soft">
+        <div className="wrap">
+          <div className="sec-head sec-row"><h2>From our blog</h2>{(postTotal || 0) > (posts?.length || 0) && <Link href="/blog" className="btn line sm">See more</Link>}</div>
+          {posts?.length ? <div className="post-grid">{posts.map((p) => <PostCard key={p.slug} p={p} />)}</div> : <p className="lead">New stories are coming soon.</p>}
+          {(postTotal || 0) > (posts?.length || 0) && <div className="btn-row" style={{ justifyContent: 'center', marginTop: '2rem' }}><Link href="/blog" className="btn rust">See more articles</Link></div>}
+        </div>
+      </section>
+
+      <section id="contact" className="section">
         <div className="wrap split" style={{ alignItems: 'start' }}>
           <div>
             <div className="sec-head"><h2>Contact Us</h2></div>
@@ -155,6 +169,7 @@ export default async function Home() {
               <a className="btn rust" href={directionsUrl(s)} target="_blank" rel="noopener noreferrer">Get directions</a>
               <a className="btn line" href={telHref(s.phone)}>Call us</a>
             </div>
+            <div className="map-card"><MapEmbed s={s} /></div>
           </div>
           <ActionForm action={submitContact} className="form-card" resetOnSuccess>
             <h3 style={{ fontFamily: 'var(--font-display), serif', fontSize: '1.7rem', marginBottom: '1rem' }}>Send us a message</h3>
@@ -168,7 +183,6 @@ export default async function Home() {
             <SubmitButton className="btn rust" pendingText="Sending...">Send message</SubmitButton>
           </ActionForm>
         </div>
-        <div className="wrap" style={{ marginTop: '2.5rem' }}><MapEmbed s={s} /></div>
       </section>
 
     </>

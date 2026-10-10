@@ -5,7 +5,7 @@ import { requireAdmin } from '@/lib/auth';
 import { sendEmail, esc } from '@/lib/email';
 import { getSettings } from '@/lib/settings';
 import { PLATFORMS } from '@/lib/socials';
-import { STATUSES, RES_STATUSES, BUFFET_GROUPS, slugify, dateLong, timeLabel } from '@/lib/format';
+import { STATUSES, RES_STATUSES, BUFFET_GROUPS, buffetGroupFor, slugify, dateLong, timeLabel } from '@/lib/format';
 
 // Every action returns { ok } or { error }. Nothing here throws to the page, so a typo or a
 // database hiccup shows a message next to the form instead of crashing the site.
@@ -188,13 +188,18 @@ export async function savePost(a, b) {
     const published = on(fd, 'published'), id = t(fd, 'id');
     const row = { title, excerpt: t(fd, 'excerpt', 300) || null, body, cover_url: t(fd, 'cover_url', 600) || null, published };
     if (published) row.published_at = t(fd, 'published_at') || new Date().toISOString();
-    if (id) must(await sb.from('posts').update(row).eq('id', id));
-    else {
-      let slug = slugify(title) || 'post';
+    // Fields added in the v5 database update. Older databases simply skip them.
+    const extra = { show_on_home: on(fd, 'show_on_home'), seo_title: t(fd, 'seo_title', 70) || null, seo_description: t(fd, 'seo_description', 170) || null, cover_alt: t(fd, 'cover_alt', 160) || null, updated_at: new Date().toISOString() };
+    const slugFor = async () => {
+      const slug = slugify(title) || 'post';
       const { data: clash } = await sb.from('posts').select('id').eq('slug', slug).maybeSingle();
-      if (clash) slug += `-${Date.now().toString(36).slice(-4)}`;
-      must(await sb.from('posts').insert({ ...row, slug }));
-    }
+      return clash ? `${slug}-${Date.now().toString(36).slice(-4)}` : slug;
+    };
+    const slug = id ? null : await slugFor();
+    const write = (r) => (id ? sb.from('posts').update(r).eq('id', id) : sb.from('posts').insert({ ...r, slug }));
+    let r = await write({ ...row, ...extra });
+    if (r.error?.code === '42703') r = await write(row);
+    must(r);
     done();
     return { ok: true, message: published ? 'Published.' : 'Saved as a draft.' };
   });
@@ -369,11 +374,18 @@ export async function saveBuffetSettings(a, b) {
 export async function saveBuffetToday(a, b) {
   return run(a, b, async (fd) => {
     const { sb } = await requireAdmin();
-    const ids = fd.getAll('today').map(String);
+    const own = fd.getAll('today').map(String);        // buffet-only dishes
+    const fromMenu = fd.getAll('menu_today').map(String); // dishes picked from the main menu
     must(await sb.from('buffet_items').update({ today: false }).eq('today', true), NEEDS_UPDATE);
-    if (ids.length) must(await sb.from('buffet_items').update({ today: true }).in('id', ids));
+    if (own.length) must(await sb.from('buffet_items').update({ today: true }).in('id', own));
+    if (fromMenu.length) {
+      const { data: dishes } = await sb.from('menu_items').select('id,name,category_id,menu_categories(slug)').in('id', fromMenu);
+      const rows = (dishes || []).map((d) => ({ menu_item_id: d.id, name: d.name, category: buffetGroupFor(d.menu_categories?.slug), today: true }));
+      must(await sb.from('buffet_items').upsert(rows, { onConflict: 'menu_item_id' }), 'Run supabase/update_v5.sql in Supabase first (it lets the buffet use menu dishes).');
+    }
     done();
-    return { ok: true, message: ids.length ? `Today's buffet saved: ${ids.length} ${ids.length === 1 ? 'dish' : 'dishes'}.` : "Today's buffet cleared." };
+    const n = own.length + fromMenu.length;
+    return { ok: true, message: n ? `Today's buffet saved: ${n} ${n === 1 ? 'dish' : 'dishes'}.` : "Today's buffet cleared." };
   });
 }
 export async function clearBuffetToday(a, b) {

@@ -18,8 +18,10 @@ export default async function BuffetPage() {
   let dishes = [];
   if (b.show_today) {
     const sb = await createClient();
-    const { data } = await sb.from('buffet_items').select('*').eq('today', true).order('sort_order').order('name');
-    dishes = data || [];
+    // Dishes picked from the main menu show the menu's own name and description. Falls back if the v5 update is missing.
+    let r = await sb.from('buffet_items').select('*, menu:menu_items(name,description,vegetarian,available)').eq('today', true).order('sort_order').order('name');
+    if (r.error) r = await sb.from('buffet_items').select('*').eq('today', true).order('sort_order').order('name');
+    dishes = (r.data || []).filter((d) => d.menu?.available !== false).map((d) => (d.menu ? { ...d, name: d.menu.name, description: d.menu.description, vegetarian: d.menu.vegetarian } : d));
   }
   const day = new Intl.DateTimeFormat('en-US', { timeZone: 'America/Chicago', weekday: 'long', month: 'long', day: 'numeric' }).format(new Date());
   const groups = [...BUFFET_GROUPS, ...new Set(dishes.map((d) => d.category).filter((c) => !BUFFET_GROUPS.includes(c)))]

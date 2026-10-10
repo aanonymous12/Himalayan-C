@@ -28,16 +28,23 @@ export default async function AdminBuffet({ searchParams }) {
   const tab = TABS.some(([k]) => k === q) ? q : 'today';
   const s = await getSettings();
   const b = { show_today: true, price: '', hours: '', note: '', ...(s.buffet || {}) };
-  const [items, fb] = await Promise.all([
+  const [items, fb, menu] = await Promise.all([
     sb.from('buffet_items').select('*').order('sort_order').order('name'),
     sb.from('buffet_feedback').select('*').order('is_read').order('created_at', { ascending: false }).limit(200),
+    sb.from('menu_items').select('id,name,vegetarian,category_id,menu_categories(name,slug,sort_order)').order('sort_order'),
   ]);
   const missing = !!items.error;
-  const dishes = items.data ?? [], feedback = fb.data ?? [];
+  const all = items.data ?? [], feedback = fb.data ?? [];
+  const dishes = all.filter((d) => !d.menu_item_id);                       // buffet-only dishes
+  const onMenuToday = new Set(all.filter((d) => d.menu_item_id && d.today).map((d) => d.menu_item_id));
+  const menuGroups = Object.values((menu.data ?? []).reduce((acc, m) => {
+    const c = m.menu_categories; if (!c) return acc;
+    (acc[c.slug] ||= { name: c.name, order: c.sort_order, list: [] }).list.push(m); return acc;
+  }, {})).sort((x, y) => x.order - y.order);
   const unread = feedback.filter((f) => !f.is_read).length;
   const avg = feedback.length ? feedback.reduce((n, f) => n + f.rating, 0) / feedback.length : 0;
   const groupsOf = (list) => [...BUFFET_GROUPS, ...new Set(list.map((d) => d.category).filter((c) => !BUFFET_GROUPS.includes(c)))].map((g) => [g, list.filter((d) => d.category === g)]).filter(([, l]) => l.length);
-  const onToday = dishes.filter((d) => d.today).length;
+  const onToday = all.filter((d) => d.today).length;
 
   return (
     <>
@@ -72,20 +79,29 @@ export default async function AdminBuffet({ searchParams }) {
               <h2 style={{ fontSize: '1.2rem', margin: 0 }}>Pick today&apos;s dishes <span className="muted">({onToday} selected)</span></h2>
               {onToday > 0 && <form action={clearBuffetToday}><button className="btn sm line">Clear all</button></form>}
             </div>
-            {dishes.length === 0 ? <p className="muted">No buffet dishes yet. Add some under the Dishes tab.</p> : (
-              <ActionForm action={saveBuffetToday}>
-                <div style={{ marginTop: '1.25rem' }}>
-                  {groupsOf(dishes).map(([g, list]) => (
-                    <div className="pick-group" key={g}>
-                      <h3>{g}</h3>
-                      <div className="pick-grid">{list.map((d) => <label className="pick" key={d.id}><input type="checkbox" name="today" value={d.id} defaultChecked={d.today} /><span>{d.name}</span></label>)}</div>
-                    </div>
-                  ))}
-                </div>
-                <SubmitButton className="btn">Save today&apos;s buffet</SubmitButton>
-                <p className="hint">The list stays until you change it, so remember to update it each day.</p>
-              </ActionForm>
-            )}
+            <ActionForm action={saveBuffetToday}>
+              <div style={{ marginTop: '1.25rem' }}>
+                {dishes.length > 0 && <h3 className="pick-title">Buffet-only dishes <small>(not on the Menu page)</small></h3>}
+                {groupsOf(dishes).map(([g, list]) => (
+                  <div className="pick-group" key={g}>
+                    <h4>{g}</h4>
+                    <div className="pick-grid">{list.map((d) => <label className="pick" key={d.id}><input type="checkbox" name="today" value={d.id} defaultChecked={d.today} /><span>{d.name}</span></label>)}</div>
+                  </div>
+                ))}
+                {dishes.length === 0 && <p className="muted">No buffet-only dishes yet. Add them under the Dishes tab.</p>}
+
+                <h3 className="pick-title" style={{ marginTop: '2rem' }}>From the main menu <small>(opens to pick; the Menu page is not changed)</small></h3>
+                {menuGroups.length === 0 && <p className="muted">No menu dishes found.</p>}
+                {menuGroups.map((g) => (
+                  <details className="pick-menu" key={g.name} open={g.list.some((m) => onMenuToday.has(m.id))}>
+                    <summary>{g.name} <span className="muted">({g.list.length})</span></summary>
+                    <div className="pick-grid">{g.list.map((m) => <label className="pick" key={m.id}><input type="checkbox" name="menu_today" value={m.id} defaultChecked={onMenuToday.has(m.id)} /><span>{m.name}{m.vegetarian && <i className="veg" />}</span></label>)}</div>
+                  </details>
+                ))}
+              </div>
+              <div style={{ marginTop: '1.5rem' }}><SubmitButton className="btn">Save today&apos;s buffet</SubmitButton></div>
+              <p className="hint">The list stays until you change it, so remember to update it each day.</p>
+            </ActionForm>
           </div>
         </>
       )}
@@ -93,10 +109,11 @@ export default async function AdminBuffet({ searchParams }) {
       {tab === 'dishes' && (
         <>
           <details className="edit" open style={{ marginBottom: '1.5rem' }}>
-            <summary><b>Add a buffet dish</b></summary>
+            <summary><b>Add a buffet-only dish</b></summary>
             <ActionForm action={saveBuffetItem} resetOnSuccess><DishFields /><SubmitButton className="btn sm">Add dish</SubmitButton></ActionForm>
           </details>
-          {dishes.length === 0 && !missing && <p className="muted">No dishes yet.</p>}
+          <p className="hint" style={{ marginTop: 0 }}>Dishes here exist only on the buffet and never appear on the Menu page. To put a regular menu dish on the buffet, pick it on the Today&apos;s buffet tab.</p>
+          {dishes.length === 0 && !missing && <p className="muted">No buffet-only dishes yet.</p>}
           {groupsOf(dishes).map(([g, list]) => (
             <div key={g} style={{ marginBottom: '1.5rem' }}>
               <h3 style={{ fontFamily: 'var(--font-body), sans-serif', fontSize: '1rem', textTransform: 'uppercase', letterSpacing: '.08em', color: 'var(--muted)' }}>{g}</h3>

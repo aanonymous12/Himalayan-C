@@ -3,7 +3,7 @@ import Icon from './Icon';
 import { getSettings } from '@/lib/settings';
 import { telHref } from '@/lib/format';
 
-const QUICK = [['home', 'Home'], ['about', 'About Us'], ['menu', 'Menu'], ['gallery', 'Gallery'], ['reservation', 'Reservation'], ['testimonials', 'Testimonial'], ['contact', 'Contact Us']];
+const QUICK = [['home', 'Home'], ['about', 'About Us'], ['menu', 'Menu'], ['gallery', 'Gallery'], ['reservation', 'Reservation'], ['testimonials', 'Testimonial'], ['blog', 'Blog'], ['contact', 'Contact Us']];
 
 export default async function Footer() {
   const s = await getSettings();
@@ -20,7 +20,7 @@ export default async function Footer() {
         </div>
         <div>
           <h3>Quick links</h3>
-          <ul>{QUICK.map(([id, l]) => <li key={id}><Link href={`/#${id}`}>{l}</Link></li>)}<li><Link href="/buffet">Buffet</Link></li><li><Link href="/blog">Journal</Link></li></ul>
+          <ul>{QUICK.map(([id, l]) => <li key={id}><Link href={`/#${id}`}>{l}</Link></li>)}<li><Link href="/buffet">Buffet</Link></li></ul>
         </div>
         <div>
           <h3>Opening hours</h3>
