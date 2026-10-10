@@ -2,6 +2,8 @@ import ActionForm, { SubmitButton } from '@/components/ActionForm';
 import MediaUpload from '@/components/admin/MediaUpload';
 import { requireAdmin } from '@/lib/auth';
 import { getSettings } from '@/lib/settings';
+import SocialsEditor from '@/components/admin/SocialsEditor';
+import { guessPlatform } from '@/lib/socials';
 import { saveConnect } from '../actions';
 
 export default async function AdminConnect() {
@@ -9,15 +11,13 @@ export default async function AdminConnect() {
   const s = await getSettings();
   const c = s.connect || {};
   const show = { order: true, reserve: true, review: true, directions: true, call: true, ...(c.show || {}) };
-  const site = process.env.NEXT_PUBLIC_SITE_URL || '';
+  const socials = c.socials || (c.links || []).map((l) => ({ platform: guessPlatform(l.url), url: l.url }));
   return (
     <>
       <div className="page-head">
         <div><h1>Business card</h1><p className="muted">A phone-friendly page for NFC cards, table QR codes and your social bios. Guests can save your contact, share it, order and find you in one tap.</p></div>
         <a className="btn sm rust" href="/connect" target="_blank" rel="noopener noreferrer">Open the card</a>
       </div>
-      <div className="panel"><b>Your card address:</b> <code>{site || 'https://your-domain.com'}/connect</code><p className="hint" style={{ marginBottom: 0 }}>Program this address onto your NFC cards, or turn it into a QR code with any free QR generator.</p></div>
-
       <ActionForm action={saveConnect}>
         <div style={{ maxWidth: 700 }}>
           <MediaUpload name="cover_url" label="Cover photo (wide)" kind="image" initial={c.cover_url} hint="A wide photo of your food or dining room. Leave empty for a plain brown banner." />
@@ -37,9 +37,7 @@ export default async function AdminConnect() {
               <label><input type="checkbox" name="show_review" defaultChecked={show.review} /> Leave a review</label>
             </div>
           </div>
-          <div className="field"><label>Extra links (one per line)</label>
-            <textarea name="links" rows={4} placeholder={'TikTok | https://tiktok.com/@yourname\nYouTube | https://youtube.com/@yourname'} defaultValue={(c.links || []).map((l) => `${l.label} | ${l.url}`).join('\n')} />
-            <span className="hint">Instagram, Facebook, Google reviews and delivery links come from Settings, so you only edit them once.</span></div>
+          <SocialsEditor initial={socials} />
           <SubmitButton className="btn">Save business card</SubmitButton>
         </div>
       </ActionForm>

@@ -19,12 +19,16 @@ export const metadata = { alternates: { canonical: '/' } };
 export default async function Home() {
   const sb = await createClient();
   const s = await getSettings();
-  const [{ data: cats }, { data: picked }, { data: reviews }, { data: gallery }] = await Promise.all([
+  const [{ data: cats }, { data: picked }, { data: reviews }, homeGallery, { count: galleryTotal }] = await Promise.all([
     sb.from('menu_categories').select('id,sort_order').eq('visible', true).order('sort_order'),
     sb.from('menu_items').select('*').eq('featured', true).order('sort_order'),
     sb.from('reviews').select('*').order('created_at', { ascending: false }),
-    sb.from('gallery_items').select('*').order('sort_order').order('created_at', { ascending: false }).limit(13),
+    sb.from('gallery_items').select('*').eq('show_on_home', true).order('sort_order').order('created_at', { ascending: false }).limit(12),
+    sb.from('gallery_items').select('id', { count: 'exact', head: true }),
   ]);
+  // Before the gallery update has been applied to the database, fall back to the newest photos.
+  let gallery = homeGallery.data;
+  if (homeGallery.error) ({ data: gallery } = await sb.from('gallery_items').select('*').order('sort_order').order('created_at', { ascending: false }).limit(8));
 
   // The menu shown here is whatever the admin ticked "Show on home page" for. Until they pick, show the first few dishes.
   const order = Object.fromEntries((cats || []).map((c, i) => [c.id, i]));
@@ -100,8 +104,9 @@ export default async function Home() {
 
       <section id="gallery" className="section">
         <div className="wrap">
-          <div className="sec-head sec-row"><h2>Gallery</h2>{(gallery?.length || 0) > 12 && <Link href="/gallery" className="btn line sm">View all</Link>}</div>
-          {gallery?.length ? <GalleryGrid items={gallery.slice(0, 12)} /> : <p className="lead">Photos of our food and restaurant are coming soon.</p>}
+          <div className="sec-head"><h2>Gallery</h2></div>
+          {gallery?.length ? <GalleryGrid items={gallery} filters={false} /> : <p className="lead">Photos of our food and restaurant are coming soon.</p>}
+          {(galleryTotal || 0) > (gallery?.length || 0) && <div className="btn-row" style={{ justifyContent: 'center', marginTop: '2rem' }}><Link href="/gallery" className="btn line">Show more</Link></div>}
         </div>
       </section>
 
@@ -154,9 +159,9 @@ export default async function Home() {
           <ActionForm action={submitContact} className="form-card" resetOnSuccess>
             <h3 style={{ fontFamily: 'var(--font-display), serif', fontSize: '1.7rem', marginBottom: '1rem' }}>Send us a message</h3>
             <div className="form-grid">
-              <div className="field"><label htmlFor="m-name">Name</label><input id="m-name" name="name" required autoComplete="name" /></div>
-              <div className="field"><label htmlFor="m-phone">Phone (optional)</label><input id="m-phone" name="phone" type="tel" autoComplete="tel" /></div>
-              <div className="field full"><label htmlFor="m-email">Email</label><input id="m-email" name="email" type="email" required autoComplete="email" /></div>
+              <div className="field"><label htmlFor="m-name">Name</label><input id="m-name" name="name" required autoComplete="off" /></div>
+              <div className="field"><label htmlFor="m-phone">Phone (optional)</label><input id="m-phone" name="phone" type="tel" autoComplete="off" /></div>
+              <div className="field full"><label htmlFor="m-email">Email</label><input id="m-email" name="email" type="email" required autoComplete="off" /></div>
               <div className="field full"><label htmlFor="m-msg">Message</label><textarea id="m-msg" name="message" rows={4} required maxLength={2000} /></div>
             </div>
             <input className="hp" name="website" tabIndex={-1} autoComplete="off" aria-hidden="true" />

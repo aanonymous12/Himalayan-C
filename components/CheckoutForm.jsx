@@ -7,6 +7,7 @@ import LineDetails from './LineDetails';
 import Thumb from './Thumb';
 import { placeOrder, checkPromo } from '@/app/checkout/actions';
 import { money, timeLabel } from '@/lib/format';
+import { fillSaved, saveDetails, clearSaved } from '@/lib/saved';
 
 const WEEKDAY = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 };
 function centralNow() {
@@ -34,8 +35,11 @@ export default function CheckoutForm({ taxRate, accepting, phoneShown, hours, op
   const [when, setWhen] = useState('asap');
   const [slot, setSlot] = useState('');
   const [clock, setClock] = useState(null);
+  const [remember, setRemember] = useState(false);
 
   useEffect(() => { setClock(centralNow()); }, []);
+  // Only details this guest chose to save on our site are filled in. No browser history is suggested.
+  useEffect(() => { if (ready && items.length) setRemember(fillSaved({ name: 'name', phone: 'phone', email: 'email' })); }, [ready, items.length > 0]);
   const openNow = clock ? !closedDays.includes(clock.day) && clock.hhmm >= openTime && clock.hhmm < closeTime : true;
   const slots = useMemo(() => {
     if (!clock) return [];
@@ -65,6 +69,7 @@ export default function CheckoutForm({ taxRate, accepting, phoneShown, hours, op
     const f = new FormData(e.currentTarget);
     setError(null);
     if (when === 'later' && !slot) return setError('Please choose a pickup time.');
+    if (remember) saveDetails({ name: f.get('name'), phone: f.get('phone'), email: f.get('email') }); else clearSaved();
     start(async () => {
       const res = await placeOrder({
         name: f.get('name'), phone: f.get('phone'), email: f.get('email'), notes: f.get('notes'),
@@ -96,12 +101,13 @@ export default function CheckoutForm({ taxRate, accepting, phoneShown, hours, op
 
           <section className="co-card">
             <h2><span className="step">1</span>Your details</h2>
-            <div className="field"><label htmlFor="name">Full name</label><input id="name" name="name" required autoComplete="name" /></div>
+            <div className="field"><label htmlFor="name">Full name</label><input id="name" name="name" required autoComplete="off" /></div>
             <div className="form-grid">
-              <div className="field"><label htmlFor="phone">Phone</label><input id="phone" name="phone" type="tel" required autoComplete="tel" /></div>
-              <div className="field"><label htmlFor="email">Email (optional)</label><input id="email" name="email" type="email" autoComplete="email" /></div>
+              <div className="field"><label htmlFor="phone">Phone</label><input id="phone" name="phone" type="tel" required autoComplete="off" /></div>
+              <div className="field"><label htmlFor="email">Email (optional)</label><input id="email" name="email" type="email" autoComplete="off" /></div>
             </div>
-            <p className="hint" style={{ margin: 0 }}>We only call or text if there is a problem with your order.</p>
+            <label className="check-row"><input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} /><span>Save my details on this device for next time</span></label>
+            <p className="hint" style={{ margin: '.4rem 0 0' }}>We only call or text if there is a problem with your order.</p>
           </section>
 
           <section className="co-card">

@@ -4,7 +4,8 @@ import { run } from '@/lib/action';
 import { requireAdmin } from '@/lib/auth';
 import { sendEmail, esc } from '@/lib/email';
 import { getSettings } from '@/lib/settings';
-import { STATUSES, RES_STATUSES, slugify, dateLong, timeLabel } from '@/lib/format';
+import { PLATFORMS } from '@/lib/socials';
+import { STATUSES, RES_STATUSES, BUFFET_GROUPS, slugify, dateLong, timeLabel } from '@/lib/format';
 
 // Every action returns { ok } or { error }. Nothing here throws to the page, so a typo or a
 // database hiccup shows a message next to the form instead of crashing the site.
@@ -160,13 +161,19 @@ export async function saveGalleryItem(a, b) {
     const url = t(fd, 'url', 600);
     if (!/^https?:\/\//.test(url)) throw new Error('Please upload a photo or video first.');
     const cat = ['food', 'restaurant', 'events'].includes(t(fd, 'category')) ? t(fd, 'category') : 'food';
-    must(await sb.from('gallery_items').insert({ url, media_type: t(fd, 'media_type') === 'video' ? 'video' : 'image', category: cat, caption: t(fd, 'caption', 120) || null }));
+    const row = { url, media_type: t(fd, 'media_type') === 'video' ? 'video' : 'image', category: cat, caption: t(fd, 'caption', 120) || null };
+    let r = await sb.from('gallery_items').insert({ ...row, show_on_home: on(fd, 'show_on_home') });
+    if (r.error?.code === '42703') r = await sb.from('gallery_items').insert(row); // gallery update not applied yet
+    must(r);
     done();
     return { ok: true, message: 'Added to the gallery.' };
   });
 }
 export async function toggleGallery(a, b) {
   return run(a, b, async (fd) => { const { sb } = await requireAdmin(); must(await sb.from('gallery_items').update({ visible: t(fd, 'visible') !== 'true' }).eq('id', t(fd, 'id'))); done(); return { ok: true }; });
+}
+export async function toggleGalleryHome(a, b) {
+  return run(a, b, async (fd) => { const { sb } = await requireAdmin(); must(await sb.from('gallery_items').update({ show_on_home: t(fd, 'home') !== 'true' }).eq('id', t(fd, 'id')), 'Run the gallery update in supabase/schema.sql first.'); done(); return { ok: true }; });
 }
 export async function deleteGalleryItem(a, b) {
   return run(a, b, async (fd) => { const { sb } = await requireAdmin(); must(await sb.from('gallery_items').delete().eq('id', t(fd, 'id'))); done(); return { ok: true }; });
@@ -329,18 +336,69 @@ export async function saveConnect(a, b) {
   return run(a, b, async (fd) => {
     const { sb } = await requireAdmin();
     const url = (k) => { const v = t(fd, k, 600); if (v && !/^https?:\/\//.test(v)) throw new Error('Links must start with https://'); return v || null; };
-    const links = t(fd, 'links', 1500).split('\n').map((l) => l.trim()).filter(Boolean).slice(0, 8).map((l) => {
-      const [label, link] = l.split('|').map((x) => x.trim());
-      if (!label || !/^https?:\/\//.test(link || '')) throw new Error(`"${l}" should look like: TikTok | https://tiktok.com/@yourname`);
-      return { label: label.slice(0, 24), url: link };
+    let raw = [];
+    try { raw = JSON.parse(String(fd.get('socials') || '[]')); } catch { throw new Error('Could not read the social links. Please try again.'); }
+    const socials = (Array.isArray(raw) ? raw : []).slice(0, 12).filter((r) => String(r?.url || '').trim()).map((r) => {
+      const link = String(r.url).trim().slice(0, 600);
+      if (!/^https?:\/\//i.test(link)) throw new Error(`"${link}" must start with https://`);
+      return { platform: PLATFORMS.some((p) => p.key === r.platform) ? r.platform : 'website', url: link };
     });
     const connect = {
       name: t(fd, 'name', 60), tagline: t(fd, 'tagline', 60), bio: t(fd, 'bio', 400),
-      cover_url: url('cover_url'), logo_url: url('logo_url'), links,
+      cover_url: url('cover_url'), logo_url: url('logo_url'), socials,
       show: { order: on(fd, 'show_order'), reserve: on(fd, 'show_reserve'), call: on(fd, 'show_call'), directions: on(fd, 'show_directions'), review: on(fd, 'show_review') },
     };
     must(await sb.from('settings').update({ connect }).eq('id', 1));
     done();
     return { ok: true, message: 'Business card saved.' };
   });
+}
+
+// ---------- buffet ----------
+const NEEDS_UPDATE = 'Run supabase/update_v4.sql in Supabase first (it adds the buffet tables).';
+
+export async function saveBuffetSettings(a, b) {
+  return run(a, b, async (fd) => {
+    const { sb } = await requireAdmin();
+    const buffet = { show_today: on(fd, 'show_today'), price: t(fd, 'price', 60), hours: t(fd, 'hours', 80), note: t(fd, 'note', 300) };
+    must(await sb.from('settings').update({ buffet }).eq('id', 1), NEEDS_UPDATE);
+    done();
+    return { ok: true, message: buffet.show_today ? "Saved. \"What's in the buffet today\" is visible on the Buffet page." : "Saved. \"What's in the buffet today\" is hidden." };
+  });
+}
+export async function saveBuffetToday(a, b) {
+  return run(a, b, async (fd) => {
+    const { sb } = await requireAdmin();
+    const ids = fd.getAll('today').map(String);
+    must(await sb.from('buffet_items').update({ today: false }).eq('today', true), NEEDS_UPDATE);
+    if (ids.length) must(await sb.from('buffet_items').update({ today: true }).in('id', ids));
+    done();
+    return { ok: true, message: ids.length ? `Today's buffet saved: ${ids.length} ${ids.length === 1 ? 'dish' : 'dishes'}.` : "Today's buffet cleared." };
+  });
+}
+export async function clearBuffetToday(a, b) {
+  return run(a, b, async () => { const { sb } = await requireAdmin(); must(await sb.from('buffet_items').update({ today: false }).eq('today', true), NEEDS_UPDATE); done(); return { ok: true }; });
+}
+export async function saveBuffetItem(a, b) {
+  return run(a, b, async (fd) => {
+    const { sb } = await requireAdmin();
+    const name = t(fd, 'name', 80);
+    if (!name) throw new Error('Please enter the dish name.');
+    const category = BUFFET_GROUPS.includes(t(fd, 'category')) ? t(fd, 'category') : 'Mains';
+    const row = { name, description: t(fd, 'description', 200) || null, category, vegetarian: on(fd, 'vegetarian') };
+    const id = t(fd, 'id');
+    if (id) must(await sb.from('buffet_items').update(row).eq('id', id), NEEDS_UPDATE);
+    else must(await sb.from('buffet_items').insert({ ...row, sort_order: Date.now() % 100000000 }), NEEDS_UPDATE);
+    done();
+    return { ok: true, message: id ? 'Dish saved.' : 'Dish added. Tick it under "Today" to put it on the buffet.' };
+  });
+}
+export async function deleteBuffetItem(a, b) {
+  return run(a, b, async (fd) => { const { sb } = await requireAdmin(); must(await sb.from('buffet_items').delete().eq('id', t(fd, 'id'))); done(); return { ok: true }; });
+}
+export async function setBuffetFeedbackRead(a, b) {
+  return run(a, b, async (fd) => { const { sb } = await requireAdmin(); must(await sb.from('buffet_feedback').update({ is_read: t(fd, 'read') !== 'true' }).eq('id', t(fd, 'id'))); revalidatePath('/admin', 'layout'); return { ok: true }; });
+}
+export async function deleteBuffetFeedback(a, b) {
+  return run(a, b, async (fd) => { const { sb } = await requireAdmin(); must(await sb.from('buffet_feedback').delete().eq('id', t(fd, 'id'))); revalidatePath('/admin', 'layout'); return { ok: true }; });
 }

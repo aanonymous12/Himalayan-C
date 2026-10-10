@@ -61,6 +61,21 @@ export async function submitFeedback(a, b) {
   });
 }
 
+export async function submitBuffetFeedback(a, b) {
+  return run(a, b, async (fd) => {
+    if (isBot(fd)) return { ok: true, message: 'Thank you.' };
+    const rating = parseInt(fd.get('rating'), 10);
+    if (!(rating >= 1 && rating <= 5)) throw new Error('Please choose a star rating.');
+    const message = clean(fd.get('message'), 1500), name = clean(fd.get('name'), 80), email = clean(fd.get('email'), 120);
+    if (email && !okEmail(email)) throw new Error('That email address does not look right.');
+    const { error } = await createAdminClient().from('buffet_feedback').insert({ rating, name: name || null, email: email || null, message: message || null });
+    if (error) throw new Error('We could not save your feedback right now. Please tell a team member.');
+    const s = await getSettings();
+    await sendEmail({ to: s.email, subject: `Buffet feedback: ${rating}/5`, html: row('Rating', `${rating} of 5`) + row('From', name || 'Anonymous') + row('Email', email) + row('Message', message) });
+    return { ok: true, message: 'Thank you! Your feedback goes straight to our kitchen team.' };
+  });
+}
+
 export async function submitReservation(a, b) {
   return run(a, b, async (fd) => {
     if (isBot(fd)) return { ok: true, message: 'Thank you.' };

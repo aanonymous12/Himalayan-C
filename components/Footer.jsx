@@ -20,7 +20,7 @@ export default async function Footer() {
         </div>
         <div>
           <h3>Quick links</h3>
-          <ul>{QUICK.map(([id, l]) => <li key={id}><Link href={`/#${id}`}>{l}</Link></li>)}<li><Link href="/blog">Journal</Link></li></ul>
+          <ul>{QUICK.map(([id, l]) => <li key={id}><Link href={`/#${id}`}>{l}</Link></li>)}<li><Link href="/buffet">Buffet</Link></li><li><Link href="/blog">Journal</Link></li></ul>
         </div>
         <div>
           <h3>Opening hours</h3>

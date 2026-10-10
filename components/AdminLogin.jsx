@@ -29,7 +29,7 @@ export default function AdminLogin() {
         <p className="muted" style={{ marginBottom: '1.5rem' }}>Staff access only.</p>
         {err && <div className="error" role="alert">{err}</div>}
         <form onSubmit={submit}>
-          <div className="field"><label htmlFor="email">Email</label><input id="email" name="email" type="email" required autoComplete="username" autoFocus /></div>
+          <div className="field"><label htmlFor="email">Email</label><input id="email" name="email" type="email" required autoComplete="off" autoFocus /></div>
           <div className="field"><label htmlFor="password">Password</label><input id="password" name="password" type="password" required autoComplete="current-password" /></div>
           <button className="btn rust" style={{ width: '100%' }} disabled={busy}>{busy ? 'Signing in...' : 'Sign in'}</button>
         </form>

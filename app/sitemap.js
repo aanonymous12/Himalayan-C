@@ -3,7 +3,7 @@ import { createClient } from '@/lib/supabase/server';
 const site = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
 
 export default async function sitemap() {
-  const pages = ['', '/menu', '/gallery', '/blog']
+  const pages = ['', '/menu', '/gallery', '/buffet', '/blog']
     .map((p) => ({ url: `${site}${p}`, changeFrequency: 'weekly', priority: p === '' ? 1 : 0.7 }));
   try {
     const sb = await createClient();

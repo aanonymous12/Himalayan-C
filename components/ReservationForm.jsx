@@ -1,5 +1,6 @@
 'use client';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { fillSaved } from '@/lib/saved';
 import ActionForm, { SubmitButton } from './ActionForm';
 import { submitReservation } from '@/app/actions';
 import { timeLabel } from '@/lib/format';
@@ -8,6 +9,7 @@ const EVENT_TYPES = ['Birthday', 'Anniversary', 'Family gathering', 'Corporate e
 
 export default function ReservationForm({ slots, minDate, maxDate, defaults }) {
   const [kind, setKind] = useState('table');
+  useEffect(() => { fillSaved({ name: 'r-name', phone: 'r-phone', email: 'r-email' }); }, []);
   return (
     <ActionForm action={submitReservation} className="form-card" resetOnSuccess>
       <div className="seg" role="radiogroup" aria-label="Reservation type">
@@ -26,9 +28,9 @@ export default function ReservationForm({ slots, minDate, maxDate, defaults }) {
         {kind === 'event'
           ? <div className="field"><label htmlFor="r-type">Type of event</label><select id="r-type" name="event_type" defaultValue="Birthday">{EVENT_TYPES.map((t) => <option key={t}>{t}</option>)}</select></div>
           : <div />}
-        <div className="field"><label htmlFor="r-name">Name</label><input id="r-name" name="name" required autoComplete="name" defaultValue={defaults?.name || ''} /></div>
-        <div className="field"><label htmlFor="r-phone">Phone</label><input id="r-phone" name="phone" type="tel" required autoComplete="tel" defaultValue={defaults?.phone || ''} /></div>
-        <div className="field full"><label htmlFor="r-email">Email (for your confirmation)</label><input id="r-email" name="email" type="email" autoComplete="email" defaultValue={defaults?.email || ''} /></div>
+        <div className="field"><label htmlFor="r-name">Name</label><input id="r-name" name="name" required autoComplete="off" defaultValue={defaults?.name || ''} /></div>
+        <div className="field"><label htmlFor="r-phone">Phone</label><input id="r-phone" name="phone" type="tel" required autoComplete="off" defaultValue={defaults?.phone || ''} /></div>
+        <div className="field full"><label htmlFor="r-email">Email (for your confirmation)</label><input id="r-email" name="email" type="email" autoComplete="off" defaultValue={defaults?.email || ''} /></div>
         <div className="field full"><label htmlFor="r-notes">Anything we should know? (allergies, high chair, occasion)</label><textarea id="r-notes" name="notes" rows={3} maxLength={500} /></div>
       </div>
       <input className="hp" name="website" tabIndex={-1} autoComplete="off" aria-hidden="true" />

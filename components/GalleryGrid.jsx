@@ -4,7 +4,7 @@ import Icon from './Icon';
 
 const CATS = [['all', 'All'], ['food', 'Food'], ['restaurant', 'Restaurant'], ['events', 'Events']];
 
-export default function GalleryGrid({ items }) {
+export default function GalleryGrid({ items, filters = true }) {
   const [cat, setCat] = useState('all');
   const [open, setOpen] = useState(null);
   const shown = items.filter((i) => cat === 'all' || i.category === cat);
@@ -24,9 +24,11 @@ export default function GalleryGrid({ items }) {
   const cur = open !== null ? shown[open] : null;
   return (
     <>
-      <div className="filters" role="group" aria-label="Filter gallery">
-        {CATS.map(([k, label]) => <button key={k} className="chip" aria-pressed={cat === k} onClick={() => setCat(k)}>{label}</button>)}
-      </div>
+      {filters && (
+        <div className="filters" role="group" aria-label="Filter gallery">
+          {CATS.map(([k, label]) => <button key={k} className="chip" aria-pressed={cat === k} onClick={() => setCat(k)}>{label}</button>)}
+        </div>
+      )}
       {shown.length === 0 && <p className="muted">Nothing here yet. Check back soon.</p>}
       <div className="gallery">
         {shown.map((it, i) => (

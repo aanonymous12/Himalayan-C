@@ -3,6 +3,8 @@ import Icon from '@/components/Icon';
 import ShareButton from '@/components/ShareButton';
 import { directionsUrl } from '@/components/InfoList';
 import { getSettings } from '@/lib/settings';
+import SocialIcon from '@/components/SocialIcon';
+import { platformOf, guessPlatform } from '@/lib/socials';
 import { telHref } from '@/lib/format';
 
 export async function generateMetadata() {
@@ -19,12 +21,15 @@ export default async function Connect() {
   const place = s.address.split('\n').pop();
   const bio = c.bio || s.story;
 
+  // Links from the business-card editor first, then the ones kept in Settings (unless the same platform is already listed).
+  const own = (c.socials || (c.links || []).map((l) => ({ platform: guessPlatform(l.url), url: l.url }))).filter((l) => l.url);
+  const have = new Set(own.map((l) => l.platform));
   const social = [
-    s.instagram_url && ['Instagram', s.instagram_url, 'instagram'],
-    s.facebook_url && ['Facebook', s.facebook_url, 'facebook'],
-    s.google_review_url && ['Google', s.google_review_url, 'star'],
-    s.doordash_url && ['Delivery', s.doordash_url, 'truck'],
-    ...(c.links || []).map((l) => [l.label, l.url, 'external']),
+    ...own.map((l) => [platformOf(l.platform).label, l.url, l.platform]),
+    !have.has('instagram') && s.instagram_url && ['Instagram', s.instagram_url, 'instagram'],
+    !have.has('facebook') && s.facebook_url && ['Facebook', s.facebook_url, 'facebook'],
+    !have.has('google') && s.google_review_url && ['Google reviews', s.google_review_url, 'google'],
+    !have.has('doordash') && s.doordash_url && ['DoorDash', s.doordash_url, 'doordash'],
   ].filter(Boolean);
 
   const actions = [
@@ -67,7 +72,7 @@ export default async function Connect() {
           <section>
             <h2 className="cc-h">Follow us</h2>
             <div className="cc-grid">
-              {social.map(([label, href, icon]) => <a key={label + href} href={href} className="cc-tile" target="_blank" rel="noopener noreferrer"><Icon name={icon} size={24} /><span>{label}</span></a>)}
+              {social.map(([label, href, icon]) => <a key={label + href} href={href} className="cc-tile" target="_blank" rel="noopener noreferrer"><SocialIcon name={icon} size={24} /><span>{label}</span></a>)}
             </div>
           </section>
         )}
