@@ -104,9 +104,8 @@ export default async function Home() {
 
       <section id="menu" className="section soft">
         <div className="wrap">
-          <div className="sec-head sec-row">
-            <div><h2>Our Menu</h2><p>Add your favorites and check out as a guest. You pay at the restaurant.</p></div>
-            <Link href="/menu" className="btn rust">See full menu</Link>
+          <div className="sec-head">
+            <h2>Our Menu</h2><p>Add your favorites and check out as a guest. You pay at the restaurant.</p>
           </div>
           <div className="dish-grid" style={{ marginTop: 0 }}>
             {dishes.map((i) => <DishCard key={i.id} item={i} canOrder={s.accepting_orders} />)}

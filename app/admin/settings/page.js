@@ -26,7 +26,7 @@ export default async function AdminSettings() {
           <MediaUpload name="hero_image_url" label="Background photo (used when there is no video)" kind="image" initial={s.hero_image_url} hint="A wide, dark-ish food or restaurant photo works best. Without a video or photo the hero is plain dark brown." />
           <div className="panel" style={{ margin: '1rem 0 1.5rem' }}>
             <h3 style={{ fontFamily: 'var(--font-body), sans-serif', fontSize: '1.05rem', marginBottom: '.25rem' }}>3D food scroll</h3>
-            <p className="hint" style={{ marginTop: 0 }}>Dishes fly toward the visitor in 3D as they scroll down the top of the home page. Phones and tablets get a lighter version, and visitors who prefer reduced motion see a still picture.</p>
+            <p className="hint" style={{ marginTop: 0 }}>Dishes slide across the top of the home page from right to left, in 3D, as the visitor scrolls. Phones and tablets get a lighter version, and visitors who prefer reduced motion see a still picture.</p>
             <label className="check-row" style={{ marginTop: 0, marginBottom: '1rem' }}><input type="checkbox" name="hero3d_enabled" defaultChecked={(s.hero3d || {}).enabled !== false} /><span>Show the 3D food scroll</span></label>
             <FoodCutouts initial={(s.hero3d || {}).items || []} />
             <div className="grid2">

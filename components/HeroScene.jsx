@@ -3,7 +3,7 @@ import { useEffect, useMemo, useRef } from 'react';
 import { frame, layout } from '@/lib/scene';
 
 // Home page hero. With food images it becomes a short "scroll scene": the hero stays pinned while the
-// dishes fly toward the viewer in 3D. Without images it is the plain hero.
+// dishes slide across in 3D from right to left. Without images it is the plain hero.
 export default function HeroScene({ items = [], shape = 'cutout', bg, children }) {
   const root = useRef(null);
   const layer = useRef(null);
@@ -56,7 +56,7 @@ export default function HeroScene({ items = [], shape = 'cutout', bg, children }
               {nodes.map((n, i) => {
                 const f = frame(n.slot, 0);
                 return (
-                  <div key={i} className={`food${shape === 'round' ? ' round' : ''}`} style={{ left: `${n.slot[0]}%`, top: `${n.slot[1]}%`, '--s': n.slot[2], transform: f.transform, opacity: f.opacity }}>
+                  <div key={i} className={`food${shape === 'round' ? ' round' : ''}`} style={{ '--y': `${n.slot[0]}%`, '--ym': `${10 + n.slot[0] * 0.8}%`, '--s': n.slot[2], transform: f.transform, opacity: f.opacity }}>
                     <img src={n.url} alt="" draggable="false" decoding="async" loading={i < 4 ? 'eager' : 'lazy'} style={{ animationDelay: `${-(i * 1.3).toFixed(1)}s` }} />
                   </div>
                 );

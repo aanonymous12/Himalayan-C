@@ -5,7 +5,7 @@ import PostCard from '@/components/PostCard';
 import ShareLinks from '@/components/ShareLinks';
 import { createClient } from '@/lib/supabase/server';
 import { dateLong } from '@/lib/format';
-import { site, abs, description, headings, readingMinutes, wordCount, SITE_NAME } from '@/lib/blog';
+import { site, abs, description, headings, faqs, readingMinutes, wordCount, SITE_NAME } from '@/lib/blog';
 
 async function load(slug) {
   const sb = await createClient();
@@ -18,12 +18,13 @@ export async function generateMetadata({ params }) {
   const p = await load(slug);
   if (!p) return { title: 'Article not found', robots: { index: false } };
   const title = p.seo_title || p.title;
+  const pageTitle = p.seo_title ? { absolute: p.seo_title } : p.title; // a custom search title is used exactly as written
   const desc = description(p);
   const url = `/blog/${slug}`;
   const image = abs(p.cover_url);
   // Without a cover photo, Next serves the generated card from opengraph-image.js next to this file.
   return {
-    title, description: desc,
+    title: pageTitle, description: desc,
     alternates: { canonical: url },
     authors: [{ name: SITE_NAME }],
     robots: { index: true, follow: true, 'max-image-preview': 'large', 'max-snippet': -1, 'max-video-preview': -1 },
@@ -45,6 +46,7 @@ export default async function Post({ params }) {
 
   const url = `${site()}/blog/${slug}`;
   const toc = headings(p.body);
+  const faq = faqs(p.body);
   const mins = readingMinutes(p.body);
   const image = abs(p.cover_url);
   const ld = [
@@ -56,6 +58,7 @@ export default async function Post({ params }) {
       publisher: { '@type': 'Organization', name: SITE_NAME, url: site(), logo: { '@type': 'ImageObject', url: `${site()}/logo` } },
       wordCount: wordCount(p.body), inLanguage: 'en-US', isPartOf: { '@type': 'Blog', name: `${SITE_NAME} Blog`, url: `${site()}/blog` },
     },
+    ...(faq.length ? [{ '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: faq.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })) }] : []),
     {
       '@context': 'https://schema.org', '@type': 'BreadcrumbList',
       itemListElement: [['Home', site()], ['Blog', `${site()}/blog`], [p.title, url]].map(([name, item], i) => ({ '@type': 'ListItem', position: i + 1, name, item })),
