@@ -120,7 +120,7 @@ export async function saveSettings(a, b) {
     const { sb } = await requireAdmin();
     const pct = Number(fd.get('tax_percent'));
     const url = (k) => { const v = t(fd, k, 600); if (v && !/^https?:\/\//.test(v)) throw new Error('Links must start with https://'); return v; };
-    must(await sb.from('settings').update({
+    const row = {
       business_name: t(fd, 'business_name', 100) || 'Himalayan Nepalese & Indian Cuisine',
       phone: t(fd, 'phone', 30), email: t(fd, 'email', 120), address: t(fd, 'address', 200), hours: t(fd, 'hours', 300),
       open_time: t(fd, 'open_time', 5) || '12:00', close_time: t(fd, 'close_time', 5) || '21:00',
@@ -132,7 +132,19 @@ export async function saveSettings(a, b) {
       closed_dates: closedDates(t(fd, 'closed_dates', 600)),
       announcement: t(fd, 'announcement', 160), tax_rate: Number.isNaN(pct) ? 0.0825 : pct / 100,
       accepting_orders: on(fd, 'accepting_orders'), reservations_enabled: on(fd, 'reservations_enabled'), catering_enabled: on(fd, 'catering_enabled'),
-    }).eq('id', 1));
+    };
+    // 3D food on the home page. Older databases without the v6 column simply skip it.
+    let foods = [];
+    try { foods = JSON.parse(String(fd.get('hero3d_items') || '[]')); } catch { throw new Error('Could not read the food images. Please try again.'); }
+    foods = (Array.isArray(foods) ? foods : []).filter((u) => /^https?:\/\//.test(String(u))).slice(0, 12).map(String);
+    const hero3d = {
+      enabled: on(fd, 'hero3d_enabled'), items: foods,
+      bg: ['auto', 'video', 'photo', 'plain'].includes(t(fd, 'hero_bg')) ? t(fd, 'hero_bg') : 'auto',
+      shape: t(fd, 'hero3d_shape') === 'round' ? 'round' : 'cutout',
+    };
+    let r = await sb.from('settings').update({ ...row, hero3d }).eq('id', 1);
+    if (r.error?.code === '42703') r = await sb.from('settings').update(row).eq('id', 1);
+    must(r);
     done();
     return { ok: true, message: 'Settings saved. The website is updated.' };
   });

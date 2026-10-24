@@ -1,4 +1,5 @@
 import ActionForm, { SubmitButton } from '@/components/ActionForm';
+import FoodCutouts from '@/components/admin/FoodCutouts';
 import MediaUpload from '@/components/admin/MediaUpload';
 import { requireAdmin } from '@/lib/auth';
 import { getSettings } from '@/lib/settings';
@@ -23,6 +24,26 @@ export default async function AdminSettings() {
           <div className="field"><label htmlFor="hero_subtitle">Line under the headline</label><input id="hero_subtitle" name="hero_subtitle" defaultValue={s.hero_subtitle} maxLength={120} /></div>
           <MediaUpload name="hero_video_url" label="Background video (optional)" kind="video" initial={s.hero_video_url} hint="MP4 or WebM, 10 to 20 second loop, 1080p, under 15 MB. Plays muted behind the headline." />
           <MediaUpload name="hero_image_url" label="Background photo (used when there is no video)" kind="image" initial={s.hero_image_url} hint="A wide, dark-ish food or restaurant photo works best. Without a video or photo the hero is plain dark brown." />
+          <div className="panel" style={{ margin: '1rem 0 1.5rem' }}>
+            <h3 style={{ fontFamily: 'var(--font-body), sans-serif', fontSize: '1.05rem', marginBottom: '.25rem' }}>3D food scroll</h3>
+            <p className="hint" style={{ marginTop: 0 }}>Dishes fly toward the visitor in 3D as they scroll down the top of the home page. Phones and tablets get a lighter version, and visitors who prefer reduced motion see a still picture.</p>
+            <label className="check-row" style={{ marginTop: 0, marginBottom: '1rem' }}><input type="checkbox" name="hero3d_enabled" defaultChecked={(s.hero3d || {}).enabled !== false} /><span>Show the 3D food scroll</span></label>
+            <FoodCutouts initial={(s.hero3d || {}).items || []} />
+            <div className="grid2">
+              <div className="field"><label htmlFor="hero_bg">Background behind the food</label>
+                <select id="hero_bg" name="hero_bg" defaultValue={(s.hero3d || {}).bg || 'auto'}>
+                  <option value="auto">Automatic (video, else photo, else plain)</option>
+                  <option value="video">Background video</option>
+                  <option value="photo">Background photo</option>
+                  <option value="plain">Plain dark brown</option>
+                </select></div>
+              <div className="field"><label htmlFor="hero3d_shape">Image style</label>
+                <select id="hero3d_shape" name="hero3d_shape" defaultValue={(s.hero3d || {}).shape || 'cutout'}>
+                  <option value="cutout">Cut-out (transparent background)</option>
+                  <option value="round">Round plate (crops any photo to a circle)</option>
+                </select></div>
+            </div>
+          </div>
           <MediaUpload name="about_image_url" label="Restaurant photo (home and About pages)" kind="image" initial={s.about_image_url} />
 
           <h2 style={H}>Ordering and bookings</h2>

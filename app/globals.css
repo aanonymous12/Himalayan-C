@@ -630,3 +630,37 @@ footer .legal { display: flex; justify-content: space-between; gap: 1rem; flex-w
 .pick-menu > summary { cursor: pointer; padding: .8rem 1rem; font-weight: 700; }
 .pick-menu .pick-grid { padding: 0 1rem 1rem; }
 .pick .veg { margin-left: .5rem; }
+
+/* Home hero: 3D food fly-through (only when the admin has added food images) */
+.hero.scene { display: block; min-height: 0; overflow: visible; overflow: clip; --stage: max(520px, calc(100svh - var(--hh))); --travel: 170svh; height: calc(var(--stage) + var(--travel)); }
+.scene-stage { position: relative; display: flex; flex-direction: column; min-height: clamp(520px, 80svh, 760px); background: var(--espresso); overflow: hidden; }
+.hero.scene .scene-stage { position: sticky; top: var(--hh); height: var(--stage); min-height: 0; }
+.scene-3d { position: absolute; inset: 0; z-index: 1; perspective: 900px; perspective-origin: 62% 50%; pointer-events: none; overflow: hidden; }
+.scene-items { position: absolute; inset: 0; transform-style: preserve-3d; }
+.food { position: absolute; width: calc(var(--s) * clamp(130px, 18vw, 280px)); margin: calc(var(--s) * clamp(130px, 18vw, 280px) / -2) 0 0 calc(var(--s) * clamp(130px, 18vw, 280px) / -2); will-change: transform, opacity; backface-visibility: hidden; }
+.food img { display: block; width: 100%; height: auto; max-height: 100%; object-fit: contain; filter: drop-shadow(0 22px 22px rgba(0, 0, 0, .5)); animation: food-bob 7s ease-in-out infinite alternate; user-select: none; }
+.food.round img { aspect-ratio: 1; object-fit: cover; border-radius: 50%; border: 3px solid rgba(255, 210, 26, .35); }
+@keyframes food-bob { from { transform: translateY(-9px) rotate(-1.5deg); } to { transform: translateY(9px) rotate(1.5deg); } }
+.scene-fade { position: absolute; inset: 0; z-index: 1; pointer-events: none; background: linear-gradient(90deg, rgba(20, 10, 6, .72) 0%, rgba(20, 10, 6, .35) 40%, rgba(20, 10, 6, 0) 65%); }
+.hero.scene .hero-main { z-index: 2; }
+.hero.scene .info-strip { z-index: 3; }
+.scene-hint { position: absolute; left: 50%; bottom: 5.5rem; z-index: 2; transform: translateX(-50%); display: grid; justify-items: center; gap: .35rem; color: #fff; font-size: .78rem; letter-spacing: .14em; text-transform: uppercase; transition: opacity .3s; pointer-events: none; }
+.scene-hint i { width: 18px; height: 18px; border-right: 2px solid var(--gold); border-bottom: 2px solid var(--gold); transform: rotate(45deg); animation: hint-nudge 1.4s ease-in-out infinite; }
+@keyframes hint-nudge { 50% { transform: translateY(6px) rotate(45deg); } }
+@media (max-width: 700px) {
+  .hero.scene { --travel: 110svh; }
+  .scene-3d { perspective: 700px; perspective-origin: 50% 58%; }
+  .food { width: calc(var(--s) * 120px); margin: calc(var(--s) * -60px) 0 0 calc(var(--s) * -60px); }
+  .scene-fade { background: linear-gradient(180deg, rgba(20, 10, 6, .6) 0%, rgba(20, 10, 6, .25) 60%, rgba(20, 10, 6, 0) 100%); }
+  .scene-hint { bottom: 7.5rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero.scene { height: auto; overflow: hidden; }
+  .hero.scene .scene-stage { position: relative; height: auto; min-height: clamp(520px, 80svh, 760px); }
+  .food img { animation: none; }
+  .scene-hint { display: none; }
+}
+.hero:not(.scene) .scene-stage { flex: 1; }
+.food-list { list-style: none; padding: 0; margin: .5rem 0 1rem; display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: .6rem; }
+.food-list li { background: repeating-conic-gradient(#ece3da 0 25%, #fff 0 50%) 50% / 16px 16px; border: 1px solid var(--line); border-radius: 10px; padding: .4rem; }
+.food-list img { width: 100%; aspect-ratio: 1; object-fit: contain; display: block; }

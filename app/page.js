@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import HeroVideo from '@/components/HeroVideo';
+import HeroScene from '@/components/HeroScene';
 import DishCard from '@/components/DishCard';
 import GalleryGrid from '@/components/GalleryGrid';
 import PostCard from '@/components/PostCard';
@@ -36,6 +37,12 @@ export default async function Home() {
   let gallery = homeGallery.data;
   if (homeGallery.error) ({ data: gallery } = await sb.from('gallery_items').select('*').order('sort_order').order('created_at', { ascending: false }).limit(8));
 
+  // Background behind the 3D food: the admin picks video, photo or plain. "auto" uses a video, else a photo, else plain.
+  const h3 = s.hero3d || {};
+  const bgMode = h3.bg || 'auto';
+  const heroVideo = !!s.hero_video_url && ['auto', 'video'].includes(bgMode);
+  const heroImage = !heroVideo && !!s.hero_image_url && ['auto', 'photo'].includes(bgMode);
+
   // The menu shown here is whatever the admin ticked "Show on home page" for. Until they pick, show the first few dishes.
   const order = Object.fromEntries((cats || []).map((c, i) => [c.id, i]));
   let dishes = (picked || []).filter((i) => order[i.category_id] !== undefined);
@@ -61,9 +68,10 @@ export default async function Home() {
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(ld) }} />
 
-      <section className="hero" id="home">
-        {s.hero_video_url ? <HeroVideo src={s.hero_video_url} /> : s.hero_image_url ? <img className="hero-video" src={s.hero_image_url} alt="" /> : null}
-        {(s.hero_video_url || s.hero_image_url) && <div className="hero-shade" />}
+      <HeroScene items={h3.enabled === false ? [] : (h3.items || [])} shape={h3.shape} bg={<>
+        {heroVideo ? <HeroVideo src={s.hero_video_url} /> : heroImage ? <img className="hero-video" src={s.hero_image_url} alt="" /> : null}
+        {(heroVideo || heroImage) && <div className="hero-shade" />}
+      </>}>
         <div className="hero-main">
           <div className="wrap hero-content">
             <h1>{s.hero_title}</h1>
@@ -81,7 +89,7 @@ export default async function Home() {
             <div><small>Phone</small><a href={telHref(s.phone)}>{s.phone}</a></div>
           </div>
         </div>
-      </section>
+      </HeroScene>
 
       <section id="about" className="section">
         <div className={`wrap ${s.about_image_url ? 'split' : ''}`} style={s.about_image_url ? undefined : { maxWidth: 820 }}>
