@@ -26,8 +26,10 @@ export default async function AdminSettings() {
           <MediaUpload name="hero_image_url" label="Background photo (used when there is no video)" kind="image" initial={s.hero_image_url} hint="A wide, dark-ish food or restaurant photo works best. Without a video or photo the hero is plain dark brown." />
           <div className="panel" style={{ margin: '1rem 0 1.5rem' }}>
             <h3 style={{ fontFamily: 'var(--font-body), sans-serif', fontSize: '1.05rem', marginBottom: '.25rem' }}>3D food scroll</h3>
-            <p className="hint" style={{ marginTop: 0 }}>Dishes slide across the top of the home page from right to left, in 3D, as the visitor scrolls. Phones and tablets get a lighter version, and visitors who prefer reduced motion see a still picture.</p>
+            <p className="hint" style={{ marginTop: 0 }}>The top of the home page shows a restaurant table in front of your background photo or video. Dishes slide across the table from right to left as the visitor scrolls. Phones and tablets get a lighter version, and visitors who prefer reduced motion see a still picture.</p>
             <label className="check-row" style={{ marginTop: 0, marginBottom: '1rem' }}><input type="checkbox" name="hero3d_enabled" defaultChecked={(s.hero3d || {}).enabled !== false} /><span>Show the 3D food scroll</span></label>
+            <label className="check-row" style={{ marginTop: 0, marginBottom: '1rem' }}><input type="checkbox" name="hero3d_layer" defaultChecked={(s.hero3d || {}).layer !== false} /><span>Show the restaurant table picture (dishes slide across it)</span></label>
+            <MediaUpload name="hero3d_layer_url" label="Table picture (optional, replaces the built-in one)" kind="image" keepAlpha initial={(s.hero3d || {}).layer_url} hint="A wide PNG or WebP with a transparent top, about 1800 px wide. The table sits at the bottom and the background photo or video shows through the transparent part. Leave empty to use the built-in picture." />
             <FoodCutouts initial={(s.hero3d || {}).items || []} />
             <div className="grid2">
               <div className="field"><label htmlFor="hero_bg">Background behind the food</label>

@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import HeroVideo from '@/components/HeroVideo';
 import HeroScene from '@/components/HeroScene';
+import { DEFAULT_LAYER } from '@/lib/scene';
 import DishCard from '@/components/DishCard';
 import GalleryGrid from '@/components/GalleryGrid';
 import PostCard from '@/components/PostCard';
@@ -68,7 +69,15 @@ export default async function Home() {
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(ld) }} />
 
-      <HeroScene items={h3.enabled === false ? [] : (h3.items || [])} shape={h3.shape} bg={<>
+      <HeroScene items={h3.enabled === false ? [] : (h3.items || [])} shape={h3.shape} layer={h3.layer === false ? null : (h3.layer_url || DEFAULT_LAYER)} strip={
+        <div className="info-strip">
+          <div className="wrap">
+            <div><small>Hours</small>{s.hours.split('\n')[0]}</div>
+            <div><small>Address</small>{s.address.replace(/\n/g, ', ')}</div>
+            <div><small>Phone</small><a href={telHref(s.phone)}>{s.phone}</a></div>
+          </div>
+        </div>
+      } bg={<>
         {heroVideo ? <HeroVideo src={s.hero_video_url} /> : heroImage ? <img className="hero-video" src={s.hero_image_url} alt="" /> : null}
         {(heroVideo || heroImage) && <div className="hero-shade" />}
       </>}>
@@ -80,13 +89,6 @@ export default async function Home() {
               <Link href="/menu" className="btn gold">Order Now</Link>
               {s.reservations_enabled && <Link href="/#reservation" className="btn line">Reserve a table</Link>}
             </div>
-          </div>
-        </div>
-        <div className="info-strip">
-          <div className="wrap">
-            <div><small>Hours</small>{s.hours.split('\n')[0]}</div>
-            <div><small>Address</small>{s.address.replace(/\n/g, ', ')}</div>
-            <div><small>Phone</small><a href={telHref(s.phone)}>{s.phone}</a></div>
           </div>
         </div>
       </HeroScene>

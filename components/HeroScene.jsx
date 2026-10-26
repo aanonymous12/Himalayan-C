@@ -2,27 +2,27 @@
 import { useEffect, useMemo, useRef } from 'react';
 import { frame, layout } from '@/lib/scene';
 
-// Home page hero. With food images it becomes a short "scroll scene": the hero stays pinned while the
-// dishes slide across in 3D from right to left. Without images it is the plain hero.
-export default function HeroScene({ items = [], shape = 'cutout', bg, children }) {
+// Home hero. Layers, back to front: background (video, photo or plain) > restaurant table image with a
+// transparent sky > dishes sliding across the table > headline and buttons > info strip.
+// With dishes the hero stays pinned for a short scroll while they slide from right to left.
+export default function HeroScene({ items = [], shape = 'cutout', layer, bg, strip, children }) {
   const root = useRef(null);
-  const layer = useRef(null);
+  const row = useRef(null);
   const hint = useRef(null);
   const nodes = useMemo(() => layout(items), [items]);
-  const on = nodes.length > 0;
+  const pinned = nodes.length > 0;
 
   useEffect(() => {
-    if (!on) return;
-    const sec = root.current, els = [...layer.current.children];
+    if (!pinned) return;
+    const sec = root.current, els = [...row.current.children];
     const still = window.matchMedia('(prefers-reduced-motion: reduce)');
     const small = window.matchMedia('(max-width: 700px)');
     let cur = 0, target = 0, raf = 0;
-    const hh = () => parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--hh')) * parseFloat(getComputedStyle(document.documentElement).fontSize) || 72;
-
+    const header = () => { const s = getComputedStyle(document.documentElement); return parseFloat(s.getPropertyValue('--hh')) * parseFloat(s.fontSize) || 72; };
     const read = () => {
-      if (still.matches) return 0.3;
+      if (still.matches) return 0.25;
       const travel = sec.offsetHeight - sec.firstElementChild.offsetHeight;
-      return travel > 0 ? Math.min(1, Math.max(0, (hh() - sec.getBoundingClientRect().top) / travel)) : 0;
+      return travel > 0 ? Math.min(1, Math.max(0, (header() - sec.getBoundingClientRect().top) / travel)) : 0;
     };
     const paint = () => {
       els.forEach((el, i) => {
@@ -44,29 +44,35 @@ export default function HeroScene({ items = [], shape = 'cutout', bg, children }
     window.addEventListener('resize', kick);
     still.addEventListener?.('change', kick);
     return () => { window.removeEventListener('scroll', kick); window.removeEventListener('resize', kick); cancelAnimationFrame(raf); };
-  }, [on, nodes]);
+  }, [pinned, nodes]);
 
   return (
-    <section ref={root} className={`hero${on ? ' scene' : ''}`} id="home">
+    <section ref={root} className={`hero${pinned ? ' scene' : ''}${layer ? ' has-table' : ''}`} id="home">
       <div className="scene-stage">
         {bg}
-        {on && (
-          <div className="scene-3d" aria-hidden="true">
-            <div className="scene-items" ref={layer}>
-              {nodes.map((n, i) => {
-                const f = frame(n.slot, 0);
-                return (
-                  <div key={i} className={`food${shape === 'round' ? ' round' : ''}`} style={{ '--y': `${n.slot[0]}%`, '--ym': `${10 + n.slot[0] * 0.8}%`, '--s': n.slot[2], transform: f.transform, opacity: f.opacity }}>
-                    <img src={n.url} alt="" draggable="false" decoding="async" loading={i < 4 ? 'eager' : 'lazy'} style={{ animationDelay: `${-(i * 1.3).toFixed(1)}s` }} />
-                  </div>
-                );
-              })}
-            </div>
+        {layer && <div className="scene-fade" aria-hidden="true" />}
+        {children}
+        {layer && (
+          <div className="scene-table" aria-hidden="true">
+            <img className="table-img" src={layer} alt="" fetchPriority="high" draggable="false" />
+            {pinned && (
+              <div className="scene-3d">
+                <div className="scene-items" ref={row}>
+                  {nodes.map((n, i) => {
+                    const f = frame(n.slot, 0);
+                    return (
+                      <div key={i} className={`food${shape === 'round' ? ' round' : ''}`} style={{ '--r': n.slot[0], '--s': n.slot[1], zIndex: 20 - Math.round(n.slot[0] * 10), transform: f.transform, opacity: f.opacity }}>
+                        <img src={n.url} alt="" draggable="false" decoding="async" loading={i < 4 ? 'eager' : 'lazy'} />
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+            {pinned && <div className="scene-hint" ref={hint}><span>Scroll</span><i /></div>}
           </div>
         )}
-        {on && <div className="scene-fade" aria-hidden="true" />}
-        {children}
-        {on && <div className="scene-hint" ref={hint} aria-hidden="true"><span>Scroll</span><i /></div>}
+        {strip}
       </div>
     </section>
   );

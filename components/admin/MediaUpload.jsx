@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/client';
 
 // Photos are resized in the browser, then uploaded straight to Supabase Storage.
 // (Sending big files through the server fails on Vercel, which is what crashed the old menu form.)
-async function shrink(file, max = 1600) {
+async function shrink(file, max = 1600, keepAlpha = false) {
   if (!file.type.startsWith('image/') || /gif|svg/.test(file.type)) return file;
   try {
     const bmp = await createImageBitmap(file);
@@ -12,11 +12,16 @@ async function shrink(file, max = 1600) {
     const c = document.createElement('canvas');
     c.width = Math.round(bmp.width * k); c.height = Math.round(bmp.height * k);
     c.getContext('2d').drawImage(bmp, 0, 0, c.width, c.height);
+    if (keepAlpha) { // transparent pictures must stay WebP / PNG, JPEG would turn the transparency black
+      const webp = await new Promise((r) => c.toBlob(r, 'image/webp', 0.88));
+      if (webp && webp.type === 'image/webp') return webp;
+      return (await new Promise((r) => c.toBlob(r, 'image/png'))) || file;
+    }
     return (await new Promise((r) => c.toBlob(r, 'image/jpeg', 0.85))) || file;
   } catch { return file; }
 }
 
-export default function MediaUpload({ name, initial, label, bucket = 'site', kind = 'image', typeName, hint }) {
+export default function MediaUpload({ name, initial, label, bucket = 'site', kind = 'image', typeName, hint, keepAlpha = false }) {
   const [url, setUrl] = useState(initial || '');
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState(null);
@@ -33,8 +38,8 @@ export default function MediaUpload({ name, initial, label, bucket = 'site', kin
     if (kind === 'image' && vid) return setErr('Please choose a photo.');
     if (f.size > 50 * 1024 * 1024) return setErr('That file is over 50 MB. Compress it first.');
     setBusy(true);
-    const body = vid ? f : await shrink(f);
-    const ext = vid ? (f.type === 'video/webm' ? 'webm' : 'mp4') : body.type === 'image/jpeg' ? 'jpg' : (f.type.split('/')[1] || 'jpg').replace('+xml', '');
+    const body = vid ? f : await shrink(f, keepAlpha ? 2200 : 1600, keepAlpha);
+    const ext = vid ? (f.type === 'video/webm' ? 'webm' : 'mp4') : body.type === 'image/jpeg' ? 'jpg' : body.type === 'image/webp' ? 'webp' : (f.type.split('/')[1] || 'jpg').replace('+xml', '');
     const path = `${vid ? 'video' : 'img'}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
     const sb = createClient();
     const { error } = await sb.storage.from(bucket).upload(path, body, { contentType: body.type || f.type, cacheControl: '31536000' });
