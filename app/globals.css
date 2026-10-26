@@ -936,3 +936,26 @@ footer .legal { display: flex; justify-content: space-between; gap: 1rem; flex-w
 .adm-burger { position: relative; }
 .adm-burger .dot { position: absolute; top: -5px; right: -5px; min-width: 20px; height: 20px; padding: 0 .3rem; display: grid; place-items: center; border-radius: 99px; background: #e5484d; color: #fff; font-size: .68rem; font-weight: 800; }
 @keyframes nb-pop { from { transform: scale(.6); } to { transform: scale(1); } }
+
+/* About: walk from the street into the dining room (pinned, scroll-driven, 3D) */
+.walk { --stage: max(460px, calc(100svh - var(--hh))); height: calc(var(--stage) + var(--steps) * 70svh); position: relative; background: var(--espresso); }
+.walk-stage { position: sticky; top: var(--hh); height: var(--stage); overflow: hidden; }
+.walk-3d { position: absolute; inset: 0; perspective: 900px; perspective-origin: 50% 55%; transform-style: preserve-3d; }
+.walk-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 55%; transform-origin: 56% 62%; will-change: transform, opacity; backface-visibility: hidden; user-select: none; }
+.walk-shade { position: absolute; inset: 0; pointer-events: none; background: linear-gradient(180deg, rgba(20, 10, 6, .35) 0%, rgba(20, 10, 6, 0) 28%, rgba(20, 10, 6, 0) 55%, rgba(20, 10, 6, .72) 100%); }
+.walk-caps { position: absolute; left: 0; right: 0; bottom: clamp(2.2rem, 7vh, 4rem); display: grid; justify-items: center; pointer-events: none; }
+.walk-cap { grid-area: 1 / 1; margin: 0; padding: 0 1rem; color: #fff; text-align: center; font-family: var(--font-display), serif; font-size: clamp(1.7rem, 4.4vw, 3.2rem); font-weight: 600; text-shadow: 0 2px 18px rgba(0, 0, 0, .65); }
+.walk-dots { position: absolute; right: clamp(.8rem, 2.5vw, 1.8rem); top: 50%; transform: translateY(-50%); display: grid; gap: .55rem; }
+.walk-dots i { width: 8px; height: 8px; border-radius: 50%; background: rgba(255, 255, 255, .4); transition: background .25s, transform .25s; }
+.walk-dots i.on { background: var(--gold); transform: scale(1.4); }
+@media (max-width: 700px) { .walk { --stage: min(max(420px, calc(100svh - var(--hh))), 128vw); height: calc(var(--stage) + var(--steps) * 60svh); } .walk-img { transform-origin: 55% 60%; } .walk-cap { font-size: clamp(1.5rem, 7vw, 2rem); } }
+.walk-static, .walk-static .walk-stage { height: auto; position: relative; top: 0; }
+.walk-static .walk-3d { position: relative; display: grid; gap: .5rem; perspective: none; }
+.walk-static .walk-img { position: relative; height: 60vw; max-height: 480px; opacity: 1 !important; visibility: visible !important; transform: none !important; }
+.walk-static .walk-caps, .walk-static .walk-dots, .walk-static .walk-shade { display: none; }
+@media (prefers-reduced-motion: reduce) { .walk { height: auto; } .walk-stage { position: relative; top: 0; height: auto; } .walk-3d { position: relative; display: grid; gap: .5rem; perspective: none; } .walk-img { position: relative; height: 60vw; max-height: 480px; opacity: 1 !important; visibility: visible !important; transform: none !important; } .walk-caps, .walk-dots, .walk-shade { display: none; } }
+.walk-admin { list-style: none; padding: 0; margin: 0 0 1rem; display: grid; gap: .75rem; }
+.walk-admin li { display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: .9rem; align-items: center; border: 1px solid var(--line); border-radius: 12px; padding: .5rem; background: var(--soft); }
+.walk-admin img { width: 100%; aspect-ratio: 3 / 2; object-fit: cover; border-radius: 8px; display: block; }
+.walk-admin-body { display: grid; gap: .45rem; min-width: 0; }
+@media (max-width: 520px) { .walk-admin li { grid-template-columns: 96px minmax(0, 1fr); } }
