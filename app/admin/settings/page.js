@@ -46,7 +46,7 @@ export default async function AdminSettings() {
                 </select></div>
             </div>
           </div>
-          <MediaUpload name="about_image_url" label="Restaurant photo (home and About pages)" kind="image" initial={s.about_image_url} />
+          <MediaUpload name="about_image_url" label="Restaurant photo (About section, revealed from behind fog as visitors scroll)" kind="image" initial={s.about_image_url} hint="A wide photo of your restaurant, 1600 px or more across, landscape. Until you add one, a built-in terrace picture is shown." />
 
           <h2 style={H}>Ordering and bookings</h2>
           <div className="checks">

@@ -2,6 +2,7 @@ import Link from 'next/link';
 import HeroVideo from '@/components/HeroVideo';
 import HeroScene from '@/components/HeroScene';
 import { DEFAULT_LAYER } from '@/lib/scene';
+import FogReveal from '@/components/FogReveal';
 import DishCard from '@/components/DishCard';
 import GalleryGrid from '@/components/GalleryGrid';
 import PostCard from '@/components/PostCard';
@@ -94,13 +95,13 @@ export default async function Home() {
       </HeroScene>
 
       <section id="about" className="section">
-        <div className={`wrap ${s.about_image_url ? 'split' : ''}`} style={s.about_image_url ? undefined : { maxWidth: 820 }}>
-          <div>
+        <div className="wrap">
+          <div className="about-intro">
             <div className="sec-head"><h2>About Us</h2></div>
             <p className="lead">{s.story}</p>
             {s.philosophy && <p>{s.philosophy}</p>}
           </div>
-          {s.about_image_url && <img className="media" src={s.about_image_url} alt="Inside the restaurant" loading="lazy" />}
+          <FogReveal src={s.about_image_url || '/about-restaurant.jpg'} alt="Inside Himalayan Nepalese & Indian Cuisine, San Marcos" />
         </div>
       </section>
 
