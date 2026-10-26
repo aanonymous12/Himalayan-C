@@ -1,8 +1,6 @@
 import ActionForm, { SubmitButton } from '@/components/ActionForm';
 import FoodCutouts from '@/components/admin/FoodCutouts';
 import MediaUpload from '@/components/admin/MediaUpload';
-import WalkSteps from '@/components/admin/WalkSteps';
-import { DEFAULT_WALK } from '@/lib/walk';
 import { requireAdmin } from '@/lib/auth';
 import { getSettings } from '@/lib/settings';
 import { closedDays } from '@/lib/format';
@@ -49,7 +47,6 @@ export default async function AdminSettings() {
             </div>
           </div>
           <MediaUpload name="about_image_url" label="Restaurant photo (About section, revealed from behind fog as visitors scroll)" kind="image" initial={s.about_image_url} hint="A wide photo of your restaurant, 1600 px or more across, landscape. Until you add one, a built-in terrace picture is shown." />
-          <WalkSteps initial={((s.hero3d || {}).walk || {}).steps || []} enabled={((s.hero3d || {}).walk || {}).enabled !== false} defaults={DEFAULT_WALK} />
 
           <h2 style={H}>Ordering and bookings</h2>
           <div className="checks">

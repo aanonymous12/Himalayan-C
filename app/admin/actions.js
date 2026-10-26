@@ -142,12 +142,6 @@ export async function saveSettings(a, b) {
       bg: ['auto', 'video', 'photo', 'plain'].includes(t(fd, 'hero_bg')) ? t(fd, 'hero_bg') : 'auto',
       shape: t(fd, 'hero3d_shape') === 'round' ? 'round' : 'cutout',
       layer: on(fd, 'hero3d_layer'), layer_url: url('hero3d_layer_url') || null,
-      walk: (() => {
-        let st = [];
-        try { st = JSON.parse(String(fd.get('walk_steps') || '[]')); } catch { throw new Error('Could not read the walk-through photos. Please try again.'); }
-        st = (Array.isArray(st) ? st : []).filter((x) => x && /^(https?:\/\/|\/)/.test(String(x.url))).slice(0, 8).map((x) => ({ url: String(x.url), caption: String(x.caption || '').slice(0, 60) }));
-        return { enabled: on(fd, 'walk_enabled'), steps: st };
-      })(),
     };
     let r = await sb.from('settings').update({ ...row, hero3d }).eq('id', 1);
     if (r.error?.code === '42703') r = await sb.from('settings').update(row).eq('id', 1);

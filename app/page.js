@@ -3,8 +3,6 @@ import HeroVideo from '@/components/HeroVideo';
 import HeroScene from '@/components/HeroScene';
 import { DEFAULT_LAYER } from '@/lib/scene';
 import FogReveal from '@/components/FogReveal';
-import WalkThrough from '@/components/WalkThrough';
-import { walkSteps } from '@/lib/walk';
 import DishCard from '@/components/DishCard';
 import GalleryGrid from '@/components/GalleryGrid';
 import PostCard from '@/components/PostCard';
@@ -106,8 +104,6 @@ export default async function Home() {
           <FogReveal src={s.about_image_url || '/about-restaurant.jpg'} alt="Inside Himalayan Nepalese & Indian Cuisine, San Marcos" />
         </div>
       </section>
-
-      <WalkThrough steps={walkSteps(h3)} />
 
       <section id="menu" className="section soft">
         <div className="wrap">
