@@ -27,7 +27,7 @@ export default function HeroScene({ items = [], shape = 'cutout', layer, bg, str
       flat = small.matches;
       els.forEach((el, i) => { el.hidden = flat && i >= PHONE_COUNT; });
     };
-    const read = () => (still.matches ? 0.9 : Math.min(1, Math.max(0, (window.scrollY + head - top) / travel)));
+    const read = () => (still.matches ? 0.9 : window.scrollY < 6 ? 0 : Math.min(1, Math.max(0, (window.scrollY + head - top) / travel)));
     const paint = () => {
       els.forEach((el, i) => {
         if (el.hidden) return;
@@ -37,7 +37,7 @@ export default function HeroScene({ items = [], shape = 'cutout', layer, bg, str
       if (hint.current) { const v = cur < 0.05 ? 1 : 0; if (v !== last) { hint.current.style.opacity = v; last = v; } }
     };
     const tick = () => {
-      cur += (target - cur) * (flat ? 0.25 : 0.14);
+      cur += (target - cur) * (flat ? 0.3 : 0.22);
       if (Math.abs(target - cur) < 0.0005) cur = target;
       paint();
       raf = cur === target ? 0 : requestAnimationFrame(tick);
@@ -48,8 +48,10 @@ export default function HeroScene({ items = [], shape = 'cutout', layer, bg, str
     window.addEventListener('scroll', kick, { passive: true });
     window.addEventListener('resize', remeasure);
     window.addEventListener('load', remeasure);
+    window.addEventListener('pageshow', remeasure);
+    const settle = setTimeout(remeasure, 350); // layout, fonts and the restored scroll position have settled by now
     still.addEventListener?.('change', remeasure);
-    return () => { window.removeEventListener('scroll', kick); window.removeEventListener('resize', remeasure); window.removeEventListener('load', remeasure); cancelAnimationFrame(raf); };
+    return () => { window.removeEventListener('scroll', kick); window.removeEventListener('resize', remeasure); window.removeEventListener('load', remeasure); window.removeEventListener('pageshow', remeasure); clearTimeout(settle); cancelAnimationFrame(raf); };
   }, [pinned, nodes]);
 
 

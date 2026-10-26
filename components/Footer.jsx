@@ -36,7 +36,6 @@ export default async function Footer() {
         </div>
         <div className="legal">
           <span>&copy; {new Date().getFullYear()} {s.business_name}. All rights reserved.</span>
-          <span>Payment is taken at the restaurant.</span>
         </div>
       </div>
     </footer>

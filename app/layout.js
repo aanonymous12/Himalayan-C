@@ -26,7 +26,7 @@ export default async function RootLayout({ children }) {
   // An administrator signed in on this browser cannot place orders.
   const { isAdmin } = await getSession();
   return (
-    <html lang="en" className={`${display.variable} ${body.variable}`}>
+    <html lang="en" data-scroll-behavior="smooth" className={`${display.variable} ${body.variable}`}>
       <body><CartProvider blocked={isAdmin}>
           <SiteChrome header={<Header />} footer={<Footer />} drawer={<CartDrawer />}>{children}</SiteChrome>
         </CartProvider></body>

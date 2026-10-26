@@ -75,7 +75,7 @@ export default async function Home() {
           <div className="wrap">
             <div><small>Hours</small>{s.hours.split('\n')[0]}</div>
             <div><small>Address</small>{s.address.replace(/\n/g, ', ')}</div>
-            <div><small>Phone</small><a href={telHref(s.phone)}>{s.phone}</a></div>
+            <div className="strip-phone"><small>Phone</small><a className="num" href={telHref(s.phone)}>{s.phone}</a><a className="call-fab" href={telHref(s.phone)} aria-label={`Call ${s.phone}`}><Icon name="phone" size={22} /></a></div>
           </div>
         </div>
       } bg={<>

@@ -11,11 +11,12 @@ const NAV = [
   ['Configuration', [['/admin/connect', 'Business card', 'card'], ['/admin/settings', 'Settings', 'gear']]],
 ];
 
-export default function AdminShell({ email, children }) {
+export default function AdminShell({ email, badges = {}, children }) {
   const [open, setOpen] = useState(false);
   const path = usePathname();
   useEffect(() => setOpen(false), [path]);
   const here = (h) => (h === '/admin' ? path === '/admin' : path.startsWith(h));
+  const total = Object.values(badges).reduce((a, b) => a + b, 0);
   const current = NAV.flatMap(([, l]) => l).find(([h]) => here(h))?.[1] || 'Admin';
 
   return (
@@ -27,7 +28,7 @@ export default function AdminShell({ email, children }) {
           {NAV.map(([group, links]) => (
             <div key={group}>
               <div className="grp">{group}</div>
-              {links.map(([h, label, icon]) => <Link key={h} href={h} aria-current={here(h) ? 'page' : undefined}><Icon name={icon} size={19} />{label}</Link>)}
+              {links.map(([h, label, icon]) => <Link key={h} href={h} aria-current={here(h) ? 'page' : undefined}><Icon name={icon} size={19} />{label}{badges[h] > 0 && <span className="nbadge" aria-label={`${badges[h]} new`}>+{badges[h] > 99 ? '99' : badges[h]}</span>}</Link>)}
             </div>
           ))}
         </nav>
@@ -35,7 +36,7 @@ export default function AdminShell({ email, children }) {
       <div className="adm-body">
         <header className="adm-top">
           <div className="row" style={{ gap: '.75rem' }}>
-            <button className="icon-btn adm-burger" onClick={() => setOpen(!open)} aria-label="Toggle navigation" aria-expanded={open}><Icon name="grid" size={20} /></button>
+            <button className="icon-btn adm-burger" onClick={() => setOpen(!open)} aria-label="Toggle navigation" aria-expanded={open}><Icon name="grid" size={20} />{total > 0 && <span className="dot">{total > 99 ? '99' : total}</span>}</button>
             <b className="adm-title">{current}</b>
           </div>
           <div className="row" style={{ gap: '1rem' }}>
