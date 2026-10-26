@@ -78,7 +78,7 @@ export default async function Home() {
           </div>
         </div>
       } bg={<>
-        {heroVideo ? <HeroVideo src={s.hero_video_url} /> : heroImage ? <img className="hero-video" src={s.hero_image_url} alt="" /> : null}
+        {heroVideo ? <HeroVideo src={s.hero_video_url} poster={s.hero_image_url} /> : heroImage ? <img className="hero-video" src={s.hero_image_url} alt="" /> : null}
         {(heroVideo || heroImage) && <div className="hero-shade" />}
       </>}>
         <div className="hero-main">
