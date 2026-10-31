@@ -6,11 +6,12 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import CartDrawer from '@/components/CartDrawer';
 import { getSession } from '@/lib/auth';
+import { siteUrl } from '@/lib/site';
 
 const display = Cormorant_Garamond({ weight: ['500', '600', '700'], subsets: ['latin'], variable: '--font-display', display: 'swap' });
 const body = Figtree({ subsets: ['latin'], variable: '--font-body', display: 'swap' });
 
-const site = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+const site = siteUrl();
 
 export const metadata = {
   metadataBase: new URL(site),

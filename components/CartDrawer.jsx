@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import { useCart } from './CartProvider';
 import LineDetails from './LineDetails';
 import Thumb from './Thumb';
+import CheckoutButton from './CheckoutButton';
 import { money } from '@/lib/format';
 
 // Slide-over cart. It opens from the cart icon in the header.
@@ -63,7 +64,7 @@ export default function CartDrawer() {
             <p className="hint" style={{ margin: '.3rem 0 1rem' }}>Tax and promo codes are applied at checkout. You pay at the restaurant.</p>
             {blocked
               ? <p className="error">You cannot place an order as admin.</p>
-              : <Link href="/checkout" className="btn gold block" onClick={() => setOpen(false)}>Go to checkout</Link>}
+              : <CheckoutButton className="btn gold block" onGo={() => setOpen(false)}>Go to checkout</CheckoutButton>}
             <button className="btn line block" style={{ marginTop: '.6rem' }} onClick={() => setOpen(false)}>Continue shopping</button>
           </div>
         )}

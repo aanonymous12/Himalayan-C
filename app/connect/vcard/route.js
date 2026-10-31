@@ -1,3 +1,4 @@
+import { siteUrl } from '@/lib/site';
 import { getSettings } from '@/lib/settings';
 
 const esc = (v) => String(v ?? '').replace(/\\/g, '\\\\').replace(/\n/g, '\\n').replace(/,/g, '\\,').replace(/;/g, '\\;');
@@ -8,7 +9,7 @@ export async function GET() {
   const name = s.connect?.name || s.business_name;
   const lines = s.address.split('\n');
   const m = (lines[1] || '').match(/^(.*?),\s*([A-Za-z]{2})\s*(\d{5})?/);
-  const site = process.env.NEXT_PUBLIC_SITE_URL || '';
+  const site = siteUrl();
   const card = [
     'BEGIN:VCARD', 'VERSION:3.0',
     `FN:${esc(name)}`, `ORG:${esc(s.business_name)}`, `TITLE:${esc(s.connect?.tagline || 'Nepalese & Indian Cuisine')}`,

@@ -1,12 +1,15 @@
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import ClearCart from '@/components/ClearCart';
+import AutoRefresh from '@/components/AutoRefresh';
 import LineDetails from '@/components/LineDetails';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { getSettings } from '@/lib/settings';
 import { money, STATUS_LABEL } from '@/lib/format';
 
-export const metadata = { title: 'Order confirmed', robots: { index: false } };
+export const metadata = { title: 'Track your order', robots: { index: false, follow: false } };
+
+const STEPS = [['new', 'Received'], ['preparing', 'Preparing'], ['ready', 'Ready'], ['completed', 'Picked up']];
 
 // Guests have no account, so the unguessable order id in the URL is their access key.
 export default async function Confirmation({ params }) {
@@ -20,8 +23,20 @@ export default async function Confirmation({ params }) {
   return (
     <div className="wrap section" style={{ maxWidth: 680 }}>
       <ClearCart />
+      {!['completed', 'cancelled'].includes(o.status) && <AutoRefresh seconds={20} />}
       <h1>Thank you, {o.customer_name.split(' ')[0]}. We have your order.</h1>
       <p style={{ margin: '1rem 0' }}>Order <b>#{o.order_number}</b> &nbsp;<span className={`status ${o.status}`}>{STATUS_LABEL[o.status]}</span></p>
+      {o.status === 'cancelled' ? (
+        <div className="error" role="status">This order was cancelled. Please call {s.phone} if you have questions.</div>
+      ) : (
+        <ol className="track" aria-label="Order progress">
+          {STEPS.map(([k, label], i) => {
+            const at = STEPS.findIndex(([x]) => x === o.status);
+            return <li key={k} className={i < at ? 'done' : i === at ? 'now' : ''}><i>{i < at ? '\u2713' : i + 1}</i><span>{label}</span></li>;
+          })}
+        </ol>
+      )}
+      {!['completed', 'cancelled'].includes(o.status) && <p className="muted" style={{ marginTop: '.6rem' }}>This page updates by itself. Keep it open, or come back to this link any time.</p>}
       <p>Pickup: <b>{o.pickup_time}</b> at {s.address.replace('\n', ', ')}. Pay when you collect.</p>
       <ul className="lines" style={{ marginTop: '1.5rem' }}>
         {o.order_items.map((i, k) => (

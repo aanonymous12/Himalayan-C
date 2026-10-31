@@ -62,7 +62,8 @@ export default async function AdminMenu() {
                     <span><b>{i.name}</b>
                       {!i.available && <span className="chip-s red">Sold out</span>}
                       {i.vegetarian && <span className="chip-s">Veg</span>}
-                      {i.featured && <span className="chip-s gold">On home page</span>}</span>
+                      {i.featured && <span className="chip-s gold">On home page</span>}
+                      {i.upsell && <span className="chip-s gold">Checkout add-on</span>}</span>
                   </span>
                   <span className="muted">{priceText(i)}</span>
                 </summary>
@@ -72,10 +73,10 @@ export default async function AdminMenu() {
                     <button className="btn sm line">{i.available ? 'Mark sold out' : 'Mark available'}</button></form>
                   <form action={duplicateItem}><input type="hidden" name="id" value={i.id} /><button className="btn sm line">Duplicate</button></form>
                 </div>
-                <ItemForm item={i} categories={cats} />
+                <ItemForm item={i} categories={cats} others={items} />
               </details>
             ))}
-            <details className="edit"><summary><b>+ Add a dish to {c.name}</b></summary><ItemForm categories={cats} categoryId={c.id} /></details>
+            <details className="edit"><summary><b>+ Add a dish to {c.name}</b></summary><ItemForm categories={cats} categoryId={c.id} others={items} /></details>
           </section>
         );
       })}

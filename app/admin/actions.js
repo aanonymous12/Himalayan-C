@@ -91,7 +91,13 @@ export async function saveItem(a, b) {
       sort_order: Number(fd.get('sort_order')) || 0,
     };
     const id = t(fd, 'id');
-    must(id ? await sb.from('menu_items').update(row).eq('id', id) : await sb.from('menu_items').insert(row));
+    // Checkout suggestions: dishes that go well with this one (shown in "Complete your meal" when this dish is in the cart).
+    const pairs = [...new Set(fd.getAll('pairs').map(String).filter((x) => /^[0-9a-f-]{36}$/i.test(x) && x !== id))].slice(0, 12);
+    const withUp = { ...row, pairs, ...(fd.has('upsell_present') ? { upsell: on(fd, 'upsell') } : {}) };
+    const save = (r) => (id ? sb.from('menu_items').update(r).eq('id', id) : sb.from('menu_items').insert(r));
+    let res = await save(withUp);
+    if (res.error?.code === '42703') res = await save(row); // the v7 update has not been run yet
+    must(res);
     done();
     return { ok: true, message: id ? 'Dish saved.' : `${name} added to the menu.` };
   });
@@ -426,4 +432,17 @@ export async function setBuffetFeedbackRead(a, b) {
 }
 export async function deleteBuffetFeedback(a, b) {
   return run(a, b, async (fd) => { const { sb } = await requireAdmin(); must(await sb.from('buffet_feedback').delete().eq('id', t(fd, 'id'))); revalidatePath('/admin', 'layout'); return { ok: true }; });
+}
+
+// Dashboard > Checkout add-ons: which dishes are offered to everyone in "Complete your meal".
+export async function saveUpsell(a, b) {
+  return run(a, b, async (fd) => {
+    const { sb } = await requireAdmin();
+    const ids = [...new Set(fd.getAll('upsell').map(String).filter((x) => /^[0-9a-f-]{36}$/i.test(x)))].slice(0, 40);
+    const off = await sb.from('menu_items').update({ upsell: false }).eq('upsell', true);
+    if (off.error) throw new Error(off.error.code === '42703' ? 'Run supabase/update_v7.sql in the Supabase SQL editor first.' : off.error.message);
+    if (ids.length) must(await sb.from('menu_items').update({ upsell: true }).in('id', ids));
+    done();
+    return { ok: true, message: ids.length ? `${ids.length} ${ids.length === 1 ? 'dish is' : 'dishes are'} offered at checkout.` : 'Checkout suggestions are off for everyone. Dishes with their own pairings still show.' };
+  });
 }

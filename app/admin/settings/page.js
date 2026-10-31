@@ -80,7 +80,7 @@ export default async function AdminSettings() {
           <div className="field"><label htmlFor="philosophy">Philosophy (About page)</label><textarea id="philosophy" name="philosophy" rows={3} defaultValue={s.philosophy} /></div>
 
           <h2 style={H}>Links</h2>
-          <div className="field"><label htmlFor="google_review_url">Google review link</label><input id="google_review_url" name="google_review_url" type="url" defaultValue={s.google_review_url} placeholder="https://g.page/r/..." /><span className="hint">Happy guests on the /review page are sent here. Find it in your Google Business Profile under &ldquo;Ask for reviews&rdquo;.</span></div>
+          <div className="field"><label htmlFor="google_review_url">Google review link</label><input id="google_review_url" name="google_review_url" type="url" defaultValue={s.google_review_url} placeholder="https://g.page/r/..." /><span className="hint">Guests who give 5 stars on the /review page and on the buffet feedback form are sent here. Anyone giving 1 to 4 stars is thanked and their note goes privately to the kitchen. Find the link in your Google Business Profile under &ldquo;Ask for reviews&rdquo;.</span></div>
           <div className="grid2">
             <div className="field"><label htmlFor="instagram_url">Instagram</label><input id="instagram_url" name="instagram_url" type="url" defaultValue={s.instagram_url} /></div>
             <div className="field"><label htmlFor="facebook_url">Facebook</label><input id="facebook_url" name="facebook_url" type="url" defaultValue={s.facebook_url} /></div>

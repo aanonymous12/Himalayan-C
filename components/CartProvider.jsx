@@ -27,7 +27,7 @@ export function CartProvider({ children, blocked = false }) {
     }), []);
   const setQty = useCallback((key, qty) =>
     setItems((cur) => (qty <= 0 ? cur.filter((i) => i.key !== key) : cur.map((i) => (i.key === key ? { ...i, qty: Math.min(50, qty) } : i)))), []);
-  const clear = useCallback(() => setItems([]), []);
+  const clear = useCallback(() => { setItems([]); try { sessionStorage.removeItem('himalayan-upsell-seen'); } catch {} }, []);
   const count = items.reduce((n, i) => n + i.qty, 0);
   const subtotal = items.reduce((n, i) => n + i.qty * i.price, 0);
 

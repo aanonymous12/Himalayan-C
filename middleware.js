@@ -19,10 +19,11 @@ export async function middleware(request) {
       },
     }
   );
-  await supabase.auth.getUser();
+  // A slow or failing login check must never break a page (share crawlers and search bots included).
+  try { await supabase.auth.getUser(); } catch {}
   return response;
 }
 
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|webp|ico)$).*)'],
+  matcher: ['/((?!_next/static|_next/image|favicon.ico|opengraph-image|twitter-image|.*/opengraph-image|.*/twitter-image|sitemap.xml|robots.txt|blog/feed.xml|logo|icon|.*\\.(?:svg|png|jpg|jpeg|webp|ico|xml|txt)$).*)'],
 };

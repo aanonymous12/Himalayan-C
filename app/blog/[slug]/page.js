@@ -21,8 +21,10 @@ export async function generateMetadata({ params }) {
   const pageTitle = p.seo_title ? { absolute: p.seo_title } : p.title; // a custom search title is used exactly as written
   const desc = description(p);
   const url = `/blog/${slug}`;
-  const image = abs(p.cover_url);
-  // Without a cover photo, Next serves the generated card from opengraph-image.js next to this file.
+  // The cover photo, or the generated card from opengraph-image.js when the article has no cover. Always an absolute https address.
+  const card = abs(`/blog/${slug}/opengraph-image`);
+  const image = abs(p.cover_url) || card;
+  const shareImg = abs(p.cover_url) ? { url: image, alt: p.cover_alt || p.title } : { url: card, width: 1200, height: 630, alt: p.title };
   return {
     title: pageTitle, description: desc,
     alternates: { canonical: url },
@@ -31,9 +33,9 @@ export async function generateMetadata({ params }) {
     openGraph: {
       type: 'article', url, title, description: desc, siteName: SITE_NAME, locale: 'en_US',
       publishedTime: p.published_at || undefined, modifiedTime: p.updated_at || p.published_at || undefined, authors: [SITE_NAME],
-      ...(image ? { images: [{ url: image, alt: p.cover_alt || p.title }] } : {}),
+      images: [shareImg],
     },
-    twitter: { card: 'summary_large_image', title, description: desc, ...(image ? { images: [image] } : {}) },
+    twitter: { card: 'summary_large_image', title, description: desc, images: [image] },
   };
 }
 
@@ -74,6 +76,7 @@ export default async function Post({ params }) {
           <h1>{p.title}</h1>
           {p.excerpt && <p className="art-lede">{p.excerpt}</p>}
           <p className="art-meta">By {SITE_NAME}{p.published_at && <> &middot; <time dateTime={p.published_at}>{dateLong(p.published_at)}</time></>} &middot; {mins} min read</p>
+          <ShareLinks url={url} title={p.title} />
         </header>
         {p.cover_url && <figure className="art-cover wrap"><img src={p.cover_url} alt={p.cover_alt || p.title} fetchPriority="high" /></figure>}
         <div className="wrap art-layout">

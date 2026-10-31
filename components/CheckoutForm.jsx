@@ -46,7 +46,7 @@ export default function CheckoutForm({ taxRate, accepting, phoneShown, hours, op
     if (closedDays.includes(clock.day)) return [];
     return slotsFor(openTime, closeTime, clock.hhmm >= openTime ? clock.hhmm : null);
   }, [clock, openTime, closeTime, closedDays]);
-  useEffect(() => { if (when === 'later' && !slots.includes(slot)) setSlot(slots[0] || ''); }, [when, slots, slot]);
+  useEffect(() => { if (slot && !slots.includes(slot)) setSlot(''); }, [slots, slot]);
 
   const lines = items.map((i) => ({ itemId: i.itemId, option: i.option, spice: i.spice, addons: (i.addons || []).map((a) => a.label), note: i.note, qty: i.qty, name: i.name }));
   const discount = Math.min(promo?.discount || 0, subtotal);
@@ -101,10 +101,10 @@ export default function CheckoutForm({ taxRate, accepting, phoneShown, hours, op
 
           <section className="co-card">
             <h2><span className="step">1</span>Your details</h2>
-            <div className="field"><label htmlFor="name">Full name</label><input id="name" name="name" required autoComplete="off" /></div>
+            <div className="field"><label htmlFor="name">Full name</label><input id="name" name="name" required autoComplete="off" placeholder="Your full name" /></div>
             <div className="form-grid">
-              <div className="field"><label htmlFor="phone">Phone</label><input id="phone" name="phone" type="tel" required autoComplete="off" /></div>
-              <div className="field"><label htmlFor="email">Email (optional)</label><input id="email" name="email" type="email" autoComplete="off" /></div>
+              <div className="field"><label htmlFor="phone">Phone</label><input id="phone" name="phone" type="tel" required autoComplete="off" placeholder="(512) 555-0123" /></div>
+              <div className="field"><label htmlFor="email">Email (optional)</label><input id="email" name="email" type="email" autoComplete="off" placeholder="you@example.com (for your receipt)" /></div>
             </div>
             <label className="check-row"><input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} /><span>Save my details on this device for next time</span></label>
             <p className="hint" style={{ margin: '.4rem 0 0' }}>We only call or text if there is a problem with your order.</p>
@@ -118,7 +118,7 @@ export default function CheckoutForm({ taxRate, accepting, phoneShown, hours, op
             </div>
             {when === 'later' && slots.length > 0 && (
               <div className="field" style={{ marginTop: '1rem', marginBottom: 0 }}><label htmlFor="slot">Pickup time today</label>
-                <select id="slot" value={slot} onChange={(e) => setSlot(e.target.value)}>{slots.map((t) => <option key={t} value={t}>{timeLabel(t)}</option>)}</select></div>
+                <select id="slot" value={slot} onChange={(e) => setSlot(e.target.value)} required><option value="" disabled>Choose a pickup time</option>{slots.map((t) => <option key={t} value={t}>{timeLabel(t)}</option>)}</select></div>
             )}
           </section>
 

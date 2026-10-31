@@ -7,7 +7,7 @@ import SignOut from '../SignOut';
 
 const NAV = [
   ['Overview', [['/admin', 'Dashboard', 'grid'], ['/admin/orders', 'Orders', 'bag'], ['/admin/reservations', 'Reservations', 'calendar'], ['/admin/messages', 'Inbox', 'inbox']]],
-  ['Website', [['/admin/menu', 'Menu', 'utensils'], ['/admin/promos', 'Promo codes', 'tag'], ['/admin/gallery', 'Gallery', 'image'], ['/admin/buffet', 'Buffet', 'flame'], ['/admin/reviews', 'Testimonials', 'star'], ['/admin/blog', 'Blog', 'pen']]],
+  ['Website', [['/admin/menu', 'Menu', 'utensils'], ['/admin/promos', 'Promo codes', 'tag'], ['/admin/upsell', 'Checkout add-ons', 'plus'], ['/admin/gallery', 'Gallery', 'image'], ['/admin/buffet', 'Buffet', 'flame'], ['/admin/reviews', 'Testimonials', 'star'], ['/admin/blog', 'Blog', 'pen']]],
   ['Configuration', [['/admin/connect', 'Business card', 'card'], ['/admin/settings', 'Settings', 'gear']]],
 ];
 

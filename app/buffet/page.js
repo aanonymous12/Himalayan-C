@@ -58,7 +58,7 @@ export default async function BuffetPage() {
       <section className={`section${b.show_today ? ' soft' : ''}`} aria-labelledby="fb-h">
         <div className="wrap" style={{ maxWidth: 720 }}>
           <div className="sec-head"><h2 id="fb-h">How was the buffet?</h2><p className="muted" style={{ margin: 0 }}>It takes less than a minute. Your feedback goes straight to the kitchen team.</p></div>
-          <BuffetFeedback />
+          <BuffetFeedback googleUrl={s.google_review_url} />
         </div>
       </section>
     </>

@@ -68,13 +68,13 @@ export default function AuthForm({ next, notice }) {
       </p>
       {msg && <div className={msg.type} role={msg.type === 'error' ? 'alert' : 'status'}>{msg.text}</div>}
       {mode === 'signup' && (<>
-        <div className="field"><label htmlFor="name">Full name</label><input id="name" name="name" required autoComplete="name" /></div>
-        <div className="field"><label htmlFor="phone">Phone (optional)</label><input id="phone" name="phone" type="tel" autoComplete="tel" /></div>
+        <div className="field"><label htmlFor="name">Full name</label><input id="name" name="name" required autoComplete="name" placeholder="Your full name" /></div>
+        <div className="field"><label htmlFor="phone">Phone (optional)</label><input id="phone" name="phone" type="tel" autoComplete="tel" placeholder="(512) 555-0123" /></div>
       </>)}
-      <div className="field"><label htmlFor="email">Email</label><input id="email" name="email" type="email" required autoComplete="email" /></div>
+      <div className="field"><label htmlFor="email">Email</label><input id="email" name="email" type="email" required autoComplete="email" placeholder="you@example.com" /></div>
       {mode !== 'forgot' && (
         <div className="field"><label htmlFor="password">Password</label>
-          <input id="password" name="password" type="password" required autoComplete={mode === 'login' ? 'current-password' : 'new-password'} />
+          <input id="password" name="password" type="password" required placeholder={mode === 'login' ? 'Your password' : 'Create a password'} autoComplete={mode === 'login' ? 'current-password' : 'new-password'} />
           {mode === 'signup' && <span className="hint">At least 8 characters.</span>}
         </div>
       )}

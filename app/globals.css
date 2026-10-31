@@ -936,3 +936,50 @@ footer .legal { display: flex; justify-content: space-between; gap: 1rem; flex-w
 .adm-burger { position: relative; }
 .adm-burger .dot { position: absolute; top: -5px; right: -5px; min-width: 20px; height: 20px; padding: 0 .3rem; display: grid; place-items: center; border-radius: 99px; background: #e5484d; color: #fff; font-size: .68rem; font-weight: 800; }
 @keyframes nb-pop { from { transform: scale(.6); } to { transform: scale(1); } }
+
+.track { list-style: none; padding: 0; margin: 1.2rem 0 .4rem; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .4rem; }
+.track li { position: relative; display: grid; justify-items: center; gap: .4rem; text-align: center; font-size: .85rem; color: var(--muted); }
+.track li::before { content: ''; position: absolute; top: 15px; left: -50%; width: 100%; height: 3px; background: var(--line); z-index: 0; }
+.track li:first-child::before { display: none; }
+.track li.done::before, .track li.now::before { background: var(--rust); }
+.track i { position: relative; z-index: 1; width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; font-style: normal; font-weight: 700; background: #fff; border: 2px solid var(--line); color: var(--muted); }
+.track li.done i { background: var(--rust); border-color: var(--rust); color: #fff; }
+.track li.now i { border-color: var(--rust); color: var(--rust); box-shadow: 0 0 0 4px rgba(154, 79, 38, .18); }
+.track li.now, .track li.done { color: var(--ink, #2b1810); font-weight: 600; }
+
+/* Checkout step: "Complete your meal" */
+.mod.upsell { width: min(560px, 100% - 1.5rem); }
+.up-grid { display: grid; gap: .6rem; margin: .8rem 0 1rem; }
+.up-card { display: grid; grid-template-columns: 56px minmax(0, 1fr) auto; gap: .8rem; align-items: center; padding: .6rem .7rem; border: 1px solid var(--line); border-radius: 12px; background: #fff; }
+.up-card.on { border-color: var(--rust); background: #fbf3ee; }
+.up-main { display: grid; gap: .1rem; min-width: 0; }
+.up-main b { font-size: .98rem; }
+.up-tag { color: var(--rust); font-size: .76rem; font-weight: 700; }
+.up-foot { display: grid; gap: .5rem; border-top: 1px solid var(--line); padding-top: .9rem; }
+.up-sub { display: flex; justify-content: space-between; font-size: 1rem; }
+.up-skip { background: none; border: 0; padding: .5rem; font: inherit; color: var(--muted); text-decoration: underline; cursor: pointer; }
+@media (max-width: 560px) { .mod.upsell { margin: auto 0 0; width: 100%; max-width: 100%; border-radius: 18px 18px 0 0; } }
+.pair-pick { margin: .4rem 0 1rem; border: 1px solid var(--line); border-radius: 10px; padding: .6rem .8rem; background: var(--soft); }
+.pair-pick > summary { cursor: pointer; }
+.pair-list { max-height: 240px; overflow: auto; display: grid; gap: .6rem; margin-top: .4rem; }
+.pair-list h4 { margin: 0 0 .2rem; font-size: .8rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+.pair-list label { display: flex; gap: .5rem; align-items: center; padding: .15rem 0; font-weight: 500; }
+.up-admin { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: .5rem; }
+.up-admin label { display: flex; gap: .6rem; align-items: center; border: 1px solid var(--line); border-radius: 10px; padding: .5rem .6rem; background: #fff; cursor: pointer; }
+.up-admin label:has(input:checked) { border-color: var(--rust); background: #fbf3ee; }
+.up-admin label.off { opacity: .55; }
+.up-admin img, .up-admin .ph { width: 42px; height: 42px; border-radius: 8px; object-fit: cover; background: var(--soft); flex: none; }
+.up-admin span:last-child { display: grid; min-width: 0; }
+.up-admin small { color: var(--muted); }
+ul.plain { margin: .4rem 0 .6rem 1.1rem; padding: 0; }
+.up-main .veg { margin-left: .45rem; }
+
+/* A red * after the label of every field that must be filled in. Optional fields say (optional) in their label. */
+.field:has(> input:required, > select:required, > textarea:required) > label::after,
+.field:has(> .pw-wrap input:required) > label::after { content: ' *'; color: #c0392b; font-weight: 700; }
+fieldset.req > legend::after { content: ' *'; color: #c0392b; font-weight: 700; }
+.form-card .req-note, .req-note { font-size: .82rem; color: var(--muted); margin: 0 0 1rem; }
+.req-note b { color: #c0392b; }
+::placeholder { color: #9a8a7e; opacity: 1; }
+.share-native { background: var(--rust); color: #fff !important; border-color: var(--rust) !important; }
+.art-head .share-row { margin-top: 1rem; }

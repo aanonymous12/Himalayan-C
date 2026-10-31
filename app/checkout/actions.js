@@ -1,10 +1,13 @@
 'use server';
 import { redirect } from 'next/navigation';
+import { after } from 'next/server';
 import { run } from '@/lib/action';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { getAdmin } from '@/lib/auth';
-import { sendEmail, esc } from '@/lib/email';
-import { money, digits } from '@/lib/format';
+import { sendEmail, isEmail, emailEnabled } from '@/lib/email';
+import { customerOrderEmail, adminOrderEmail } from '@/lib/orderEmail';
+import { digits } from '@/lib/format';
+import { siteUrl } from '@/lib/site';
 import { priceLines, round2 } from '@/lib/cart';
 import { evaluatePromo } from '@/lib/promo';
 
@@ -41,10 +44,10 @@ export async function placeOrder(payload) {
     const pickup = String(p?.pickup || '').trim().slice(0, 40) || 'ASAP';
     if (!name) return { error: 'Please enter your name.' };
     if (digits(phone).length < 10) return { error: 'Please enter a phone number we can reach, including area code.' };
-    if (email && !/^\S+@\S+\.\S+$/.test(email)) return { error: 'That email address does not look right.' };
+    if (email && !isEmail(email)) return { error: 'That email address does not look right.' };
 
     const db = createAdminClient();
-    const { data: settings } = await db.from('settings').select('accepting_orders, tax_rate, email, business_name, address').eq('id', 1).single();
+    const { data: settings } = await db.from('settings').select('accepting_orders, tax_rate, email, business_name, address, phone').eq('id', 1).single();
     if (!settings?.accepting_orders) return { error: 'We are not taking online orders right now. Please call us.' };
 
     const priced = priceLines(await loadMenu(db, p?.items), p?.items);
@@ -83,13 +86,23 @@ export async function placeOrder(payload) {
       }
     }
 
-    const detail = (r) => [r.option_label, r.spice && `${r.spice} spice`, r.addons.map((a) => `+${a.label}`).join(', '), r.note && `Note: ${r.note}`].filter(Boolean).join(' | ');
-    const list = priced.rows.map((r) => `<li>${r.qty} x ${esc(r.name)} - ${money(r.qty * r.unit_price)}${detail(r) ? `<br><small>${esc(detail(r))}</small>` : ''}</li>`).join('');
-    const body = `<ul>${list}</ul>${discount ? `<p>Promo ${esc(promo)}: -${money(discount)}</p>` : ''}<p>Total due at pickup: <b>${money(total)}</b></p><p>Pickup: ${esc(pickup)}</p>`;
-    await Promise.all([
-      sendEmail({ to: settings.email, subject: `New online order #${order.order_number}`, html: `<p><b>${esc(name)}</b> ${esc(phone)}</p>${body}${notes ? `<p>Note: ${esc(notes)}</p>` : ''}` }),
-      sendEmail({ to: email, subject: `Your order #${order.order_number} is confirmed`, html: `<p>Thanks, ${esc(name)}! We are preparing your order.</p>${body}<p>Pay at the restaurant when you pick up.<br>${esc(String(settings.address).replace(/\n/g, ', '))}</p>` }),
-    ]);
+    // Emails are sent by the server after the customer has their confirmation page, so a slow or failing
+    // mail service can never delay or break an order. The browser never touches the email service.
+    const full = { ...order, customer_name: name, phone, email, notes, pickup_time: pickup, subtotal: priced.subtotal, discount, tax, total, promo_code: promo };
+    after(async () => {
+      try {
+        if (!emailEnabled()) return;
+        const site = siteUrl();
+        // Two emails per order: the restaurant gets the details, the customer gets the confirmation and tracking link.
+        const restaurantTo = settings.email || process.env.GMAIL_USER;
+        const a = adminOrderEmail({ order: full, rows: priced.rows, settings, site });
+        await sendEmail({ to: restaurantTo, subject: a.subject, html: a.html, replyTo: email });
+        if (email) {
+          const c = customerOrderEmail({ order: full, rows: priced.rows, settings, trackUrl: site ? `${site}/order/${order.id}` : '' });
+          await sendEmail({ to: email, subject: c.subject, html: c.html, replyTo: settings.email });
+        }
+      } catch (e) { console.error('[order email]', e?.message); }
+    });
     redirect(`/order/${order.id}`);
   });
 }

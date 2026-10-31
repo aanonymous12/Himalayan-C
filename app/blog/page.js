@@ -8,8 +8,8 @@ export const metadata = {
   title: 'Blog: Nepali and Indian food stories, recipes and news',
   description: DESC,
   alternates: { canonical: '/blog', types: { 'application/rss+xml': '/blog/feed.xml' } },
-  openGraph: { type: 'website', url: '/blog', title: `Blog | ${SITE_NAME}`, description: DESC, siteName: SITE_NAME },
-  twitter: { card: 'summary_large_image', title: `Blog | ${SITE_NAME}`, description: DESC },
+  openGraph: { type: 'website', url: '/blog', title: `Blog | ${SITE_NAME}`, description: DESC, siteName: SITE_NAME, images: [{ url: '/opengraph-image', width: 1200, height: 630, alt: 'Himalayan Nepalese & Indian Cuisine' }] },
+  twitter: { card: 'summary_large_image', title: `Blog | ${SITE_NAME}`, description: DESC, images: ['/opengraph-image'] },
 };
 
 export default async function Blog() {

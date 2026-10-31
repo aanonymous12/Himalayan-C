@@ -2,6 +2,7 @@ import Link from 'next/link';
 import HeroVideo from '@/components/HeroVideo';
 import HeroScene from '@/components/HeroScene';
 import { DEFAULT_LAYER } from '@/lib/scene';
+import { siteUrl } from '@/lib/site';
 import FogReveal from '@/components/FogReveal';
 import DishCard from '@/components/DishCard';
 import GalleryGrid from '@/components/GalleryGrid';
@@ -56,7 +57,7 @@ export default async function Home() {
 
   const avg = reviews?.length ? reviews.reduce((n, r) => n + r.rating, 0) / reviews.length : 0;
   const today = todayISO();
-  const site = process.env.NEXT_PUBLIC_SITE_URL || '';
+  const site = siteUrl();
   const ld = {
     '@context': 'https://schema.org', '@type': 'Restaurant',
     name: s.business_name, servesCuisine: ['Nepalese', 'Indian'], telephone: s.phone, email: s.email || undefined,
@@ -183,11 +184,12 @@ export default async function Home() {
           </div>
           <ActionForm action={submitContact} className="form-card" resetOnSuccess>
             <h3 style={{ fontFamily: 'var(--font-display), serif', fontSize: '1.7rem', marginBottom: '1rem' }}>Send us a message</h3>
+            <p className="req-note"><b>*</b> Required</p>
             <div className="form-grid">
-              <div className="field"><label htmlFor="m-name">Name</label><input id="m-name" name="name" required autoComplete="off" /></div>
-              <div className="field"><label htmlFor="m-phone">Phone (optional)</label><input id="m-phone" name="phone" type="tel" autoComplete="off" /></div>
-              <div className="field full"><label htmlFor="m-email">Email</label><input id="m-email" name="email" type="email" required autoComplete="off" /></div>
-              <div className="field full"><label htmlFor="m-msg">Message</label><textarea id="m-msg" name="message" rows={4} required maxLength={2000} /></div>
+              <div className="field"><label htmlFor="m-name">Name</label><input id="m-name" name="name" required autoComplete="off" placeholder="Your full name" /></div>
+              <div className="field"><label htmlFor="m-phone">Phone (optional)</label><input id="m-phone" name="phone" type="tel" autoComplete="off" placeholder="(512) 555-0123" /></div>
+              <div className="field full"><label htmlFor="m-email">Email</label><input id="m-email" name="email" type="email" required autoComplete="off" placeholder="you@example.com" /></div>
+              <div className="field full"><label htmlFor="m-msg">Message</label><textarea id="m-msg" name="message" rows={4} required maxLength={2000} placeholder="How can we help?" /></div>
             </div>
             <input className="hp" name="website" tabIndex={-1} autoComplete="off" aria-hidden="true" />
             <SubmitButton className="btn rust" pendingText="Sending...">Send message</SubmitButton>

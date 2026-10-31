@@ -1,7 +1,7 @@
 'use client';
-import Link from 'next/link';
 import { useCart } from './CartProvider';
 import LineDetails from './LineDetails';
+import CheckoutButton from './CheckoutButton';
 import { money } from '@/lib/format';
 
 // Sticky "Your cart" panel beside the menu on larger screens (phones use the cart icon in the header).
@@ -36,7 +36,7 @@ export default function CartPanel() {
           <p className="hint" style={{ margin: '.25rem 0 1rem' }}>Tax and promo codes are added at checkout.</p>
           {blocked
             ? <p className="error" role="alert" style={{ margin: 0 }}>You cannot place an order as admin.</p>
-            : <Link href="/checkout" className="btn gold block">Checkout &rarr;</Link>}
+            : <CheckoutButton className="btn gold block">Checkout &rarr;</CheckoutButton>}
         </>
       )}
     </aside>

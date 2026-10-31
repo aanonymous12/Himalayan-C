@@ -4,7 +4,9 @@ import DeleteButton from './DeleteButton';
 import { saveItem, deleteItem } from '@/app/admin/actions';
 
 // Used for both "add dish" and "edit dish". Errors appear under the form, never as a crash page.
-export default function ItemForm({ item, categories, categoryId }) {
+export default function ItemForm({ item, categories, categoryId, others = [] }) {
+  const paired = new Set(Array.isArray(item?.pairs) ? item.pairs : []);
+  const choices = others.filter((o) => o.id !== item?.id);
   const opts = (item?.options || []).map((o) => `${o.label} | ${o.price}`).join('\n');
   return (
     <ActionForm action={saveItem} resetOnSuccess={!item}>
@@ -28,10 +30,27 @@ export default function ItemForm({ item, categories, categoryId }) {
         <div className="field"><label>Dietary tags (comma separated)</label><input name="tags" placeholder="Gluten free, Spicy" defaultValue={(item?.tags || []).join(', ')} /></div>
         <div className="field"><label>Order on menu</label><input name="sort_order" type="number" defaultValue={item?.sort_order ?? 0} /></div>
       </div>
+      {choices.length > 0 && (
+        <details className="pair-pick">
+          <summary><b>Goes well with</b> <span className="muted">{paired.size ? `${paired.size} chosen` : 'optional'}</span></summary>
+          <p className="hint">When a guest has this dish in their cart, these are suggested first in &quot;Complete your meal&quot; (for example naan with a curry, or a dip with momo).</p>
+          <div className="pair-list">
+            {categories.map((c) => {
+              const list = choices.filter((o) => o.category_id === c.id);
+              return list.length ? (
+                <div key={c.id}><h4>{c.name}</h4>
+                  {list.map((o) => <label key={o.id}><input type="checkbox" name="pairs" value={o.id} defaultChecked={paired.has(o.id)} /> {o.name}</label>)}</div>
+              ) : null;
+            })}
+          </div>
+        </details>
+      )}
       <div className="checks">
         <label><input type="checkbox" name="available" defaultChecked={item ? item.available : true} /> Available</label>
         <label><input type="checkbox" name="vegetarian" defaultChecked={item?.vegetarian} /> Vegetarian</label>
         <label><input type="checkbox" name="featured" defaultChecked={item?.featured} /> Show on the home page menu</label>
+        <input type="hidden" name="upsell_present" value="1" />
+        <label><input type="checkbox" name="upsell" defaultChecked={item?.upsell} /> Offer to everyone at checkout</label>
       </div>
       <div className="row">
         <SubmitButton className="btn sm">{item ? 'Save changes' : 'Add dish'}</SubmitButton>

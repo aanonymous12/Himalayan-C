@@ -1,8 +1,9 @@
+import { siteUrl } from '@/lib/site';
 import Link from 'next/link';
 
 // Banner for inner pages, with visible breadcrumbs and BreadcrumbList schema for search engines.
 export default function PageHero({ title, sub, crumbs = [] }) {
-  const site = process.env.NEXT_PUBLIC_SITE_URL || '';
+  const site = siteUrl();
   const trail = [['Home', '/'], ...crumbs.map((c) => (Array.isArray(c) ? c : [c])), [title]];
   const ld = {
     '@context': 'https://schema.org', '@type': 'BreadcrumbList',
