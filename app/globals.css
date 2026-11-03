@@ -983,3 +983,14 @@ fieldset.req > legend::after { content: ' *'; color: #c0392b; font-weight: 700; 
 ::placeholder { color: #9a8a7e; opacity: 1; }
 .share-native { background: var(--rust); color: #fff !important; border-color: var(--rust) !important; }
 .art-head .share-row { margin-top: 1rem; }
+
+/* Add-ons step */
+.addons h1 { font-size: clamp(2rem, 4vw, 2.7rem); }
+.addons-layout { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 1.75rem; align-items: start; margin-top: 1.25rem; }
+.addons .up-grid { margin: 0; }
+.addons-sum { position: sticky; top: calc(var(--hh) + 1rem); background: var(--soft); border: 1px solid var(--line); border-radius: 16px; padding: 1.2rem; display: grid; gap: .7rem; }
+.addons-sum h2 { font-size: 1.2rem; margin: 0; font-family: var(--font-body), sans-serif; }
+.addons-sum ul { list-style: none; margin: 0; padding: 0; display: grid; gap: .35rem; font-size: .95rem; }
+.addons-sum li { display: flex; justify-content: space-between; gap: .75rem; }
+.addons-sum .hint { margin: 0; }
+@media (max-width: 860px) { .addons-layout { grid-template-columns: minmax(0, 1fr); } .addons-sum { position: static; } }

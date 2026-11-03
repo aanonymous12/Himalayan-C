@@ -16,7 +16,7 @@ export default async function AdminUpsell() {
 
   return (
     <>
-      <div className="page-head"><div><h1>Checkout add-ons</h1><p className="muted">When a guest taps Checkout, they see &quot;Complete your meal&quot; with up to four of these, one tap to add. It shows once per order and they can skip it.</p></div></div>
+      <div className="page-head"><div><h1>Checkout add-ons</h1><p className="muted">Every order goes Browse menu, then Add-ons (&quot;Complete your meal&quot;), then Checkout and pay. The Add-ons step shows up to six of these, one tap to add, and guests can skip it. If there is nothing left to offer, it is skipped automatically.</p></div></div>
       {missing && <div className="error">One-time setup: open the Supabase SQL editor and run <b>supabase/update_v7.sql</b>, then reload this page.</div>}
       <div className="panel" style={{ marginBottom: '1.5rem' }}>
         <h2>How it picks</h2>

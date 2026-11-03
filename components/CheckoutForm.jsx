@@ -91,7 +91,7 @@ export default function CheckoutForm({ taxRate, accepting, phoneShown, hours, op
     <div className="wrap co">
       <h1 style={{ marginBottom: '.4rem' }}>Checkout</h1>
       <p className="muted" style={{ marginBottom: '1rem' }}>Guest checkout. No account needed, and you pay at the restaurant.</p>
-      <OrderSteps current={2} />
+      <OrderSteps current={3} />
       <div className="co-grid">
         <form id="checkout-form" onSubmit={submit}>
           {blocked && <div className="error" role="alert">You cannot place an order as admin.</div>}
