@@ -994,3 +994,5 @@ fieldset.req > legend::after { content: ' *'; color: #c0392b; font-weight: 700; 
 .addons-sum li { display: flex; justify-content: space-between; gap: .75rem; }
 .addons-sum .hint { margin: 0; }
 @media (max-width: 860px) { .addons-layout { grid-template-columns: minmax(0, 1fr); } .addons-sum { position: static; } }
+
+.cc-tip { grid-column: 1 / -1; order: 9; margin: .25rem 0 0; font-size: .9rem; line-height: 1.4; color: var(--fg); background: #fff7e0; border: 1px solid var(--gold); border-radius: 10px; padding: .6rem .8rem; }

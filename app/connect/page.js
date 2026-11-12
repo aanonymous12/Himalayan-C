@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import Icon from '@/components/Icon';
+import SaveContact from '@/components/SaveContact';
 import ShareButton from '@/components/ShareButton';
 import { directionsUrl } from '@/components/InfoList';
 import { getSettings } from '@/lib/settings';
@@ -53,7 +54,7 @@ export default async function Connect() {
         </header>
 
         <div className="cc-actions">
-          <a href="/connect/vcard" className="cc-btn primary"><Icon name="user" size={20} /><span>Save contact</span></a>
+          <SaveContact href="/connect/contact.vcf" />
           <ShareButton title={name} text={`${name} - ${c.tagline || 'Fresh Himalayan cooking'}`} />
         </div>
 

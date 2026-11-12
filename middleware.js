@@ -25,5 +25,5 @@ export async function middleware(request) {
 }
 
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico|opengraph-image|twitter-image|.*/opengraph-image|.*/twitter-image|sitemap.xml|robots.txt|blog/feed.xml|logo|icon|.*\\.(?:svg|png|jpg|jpeg|webp|ico|xml|txt)$).*)'],
+  matcher: ['/((?!_next/static|_next/image|favicon.ico|opengraph-image|twitter-image|.*/opengraph-image|.*/twitter-image|sitemap.xml|robots.txt|blog/feed.xml|logo|icon|.*\\.(?:svg|png|jpg|jpeg|webp|ico|xml|txt|vcf)$).*)'],
 };
