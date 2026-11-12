@@ -4,10 +4,9 @@ import { getSettings } from '@/lib/settings';
 
 export const dynamic = 'force-dynamic';
 
-// Contact card (vCard 3.0), written the same way the iPhone Contacts app writes its own exports so that
-// Apple's parser (used by Safari AND by Chrome on iPhone) always accepts it. Android reads the same file.
-// A card Apple cannot parse makes the iPhone do nothing at all, so everything here is kept conservative:
-// only a real JPEG or PNG is ever embedded as the photo, lines are folded, endings are CRLF.
+// Contact card (vCard 3.0) for iPhone and Android. Kept deliberately plain: a phone that cannot parse the
+// card refuses the whole file, so only standard fields are used, text is cleaned, endings are CRLF and
+// only a real JPEG or PNG is ever embedded as the photo.
 const esc = (v) => String(v ?? '').replace(/\\/g, '\\\\').replace(/\r?\n/g, '\\n').replace(/,/g, '\\,').replace(/;/g, '\;');
 const clean = (u) => String(u || '').trim().replace(/[\r\n\s]+/g, '');
 const fold = (line) => {
@@ -49,46 +48,56 @@ async function photo(url, letter) {
   return null;
 }
 
-export async function GET(req) {
-  const s = await getSettings();
-  const name = String(s.connect?.name || s.business_name || 'Himalayan').trim();
-  const lines = String(s.address || '').split('\n');
+const safe = (v) => String(v ?? '').replace(/[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]/g, '').replace(/[\u2028\u2029]/g, ' ').trim();
+
+function build(s, pic, withExtras) {
+  const c = s.connect || {};
+  const name = safe(c.name || s.business_name || 'Himalayan Nepalese & Indian Cuisine');
+  const lines = safe(s.address).split('\n').map((l) => l.trim());
   const m = (lines[1] || '').match(/^(.*?),\s*([A-Za-z]{2})\s*(\d{5})?/);
   const site = clean(siteUrl());
-  const pic = await photo(s.connect?.logo_url, name.slice(0, 1).toUpperCase());
-  const digits = String(s.phone || '').replace(/\D/g, '');
-  const tel = digits.length === 10 ? `+1${digits}` : digits.length === 11 && digits[0] === '1' ? `+${digits}` : String(s.phone || '').trim();
-  const socials = (s.connect?.socials || s.connect?.links || []).map((l) => l?.url);
-  const extra = [...new Set([s.instagram_url, s.facebook_url, ...socials].map(clean).filter((u) => /^https?:\/\//i.test(u) && u !== site))].slice(0, 6);
-
-  const rows = [
+  const phone = safe(c.phone || s.phone);
+  const digits = phone.replace(/\D/g, '');
+  const tel = digits.length === 10 ? `+1${digits}` : digits.length === 11 && digits[0] === '1' ? `+${digits}` : phone.replace(/[^\d+()\-. ]/g, '');
+  const email = clean(s.email);
+  const socials = (c.socials || c.links || []).map((l) => l?.url);
+  const extra = withExtras ? [...new Set([s.instagram_url, s.facebook_url, ...socials].map(clean).filter((u) => /^https?:\/\/[^\s]+$/i.test(u) && u !== site))].slice(0, 6) : [];
+  // Plain, widely supported vCard 3.0. Text lines are not folded (folding is optional and is where files
+  // get damaged); only the photo, which is plain letters and digits, is folded.
+  return [
     'BEGIN:VCARD',
     'VERSION:3.0',
-    'N:;;;;',
+    `N:${esc(name)};;;;`,
     `FN:${esc(name)}`,
-    `ORG:${esc(s.business_name || name)};`,
-    'X-ABShowAs:COMPANY',
-    tel && `TEL;type=WORK;type=VOICE;type=pref:${tel}`,
-    s.email && `EMAIL;type=INTERNET;type=WORK;type=pref:${clean(s.email)}`,
-    lines[0] && `ADR;type=WORK;type=pref:;;${esc(lines[0])};${esc(m?.[1] || '')};${esc(m?.[2] || '')};${esc(m?.[3] || '')};United States`,
-    site && `item1.URL;type=pref:${site}`,
-    site && 'item1.X-ABLabel:_$!<HomePage>!$_',
-    ...extra.flatMap((u, i) => [`item${i + 2}.URL:${u}`, `item${i + 2}.X-ABLabel:_$!<Other>!$_`]),
-    `NOTE:${esc(s.connect?.tagline || 'Nepalese & Indian Cuisine')}`,
-    pic && `PHOTO;ENCODING=b;TYPE=${pic.type}:${pic.data.toString('base64')}`,
+    `ORG:${esc(safe(s.business_name) || name)}`,
+    tel && `TEL;TYPE=WORK,VOICE:${tel}`,
+    /^[^\s@]+@[^\s@]+$/.test(email) && `EMAIL;TYPE=INTERNET,WORK:${email}`,
+    lines[0] && `ADR;TYPE=WORK:;;${esc(lines[0])};${esc(m?.[1] || '')};${esc(m?.[2] || '')};${esc(m?.[3] || '')};USA`,
+    /^https?:\/\//i.test(site) && `URL:${site}`,
+    ...extra.map((u) => `URL:${u}`),
+    pic && fold(`PHOTO;ENCODING=b;TYPE=${pic.type}:${pic.data.toString('base64')}`),
     'END:VCARD',
-  ].filter(Boolean).map(fold);
+  ].filter(Boolean).join('\r\n') + '\r\n';
+}
 
-  const body = Buffer.from(rows.join('\r\n') + '\r\n', 'utf8');
-  // ?dl=1 asks for a download instead of opening in place (used as the fallback for browsers inside apps).
-  const dl = new URL(req.url).searchParams.get('dl') === '1';
-  return new Response(body, {
+export async function GET(req) {
+  const q = new URL(req.url).searchParams;
+  let card;
+  try {
+    const s = await getSettings();
+    const name = safe(s.connect?.name || s.business_name || 'H');
+    // ?photo=0 leaves the picture out (for testing a phone that refuses the card).
+    const pic = q.get('photo') === '0' ? null : await photo(s.connect?.logo_url, (name.match(/[A-Za-z0-9]/)?.[0] || 'H').toUpperCase());
+    card = build(s, pic, q.get('plain') !== '1');
+  } catch {
+    card = ['BEGIN:VCARD', 'VERSION:3.0', 'N:Himalayan Nepalese & Indian Cuisine;;;;', 'FN:Himalayan Nepalese & Indian Cuisine', 'TEL;TYPE=WORK,VOICE:+15127480104', 'END:VCARD'].join('\r\n') + '\r\n';
+  }
+  // ?dl=1 asks for a download instead of opening in place (fallback for browsers inside apps).
+  return new Response(card, {
     headers: {
       'Content-Type': 'text/vcard; charset=utf-8',
-      'Content-Length': String(body.length),
-      'Content-Disposition': `${dl ? 'attachment' : 'inline'}; filename="himalayan-contact.vcf"`,
-      'X-Content-Type-Options': 'nosniff',
-      'Cache-Control': 'no-store',
+      'Content-Disposition': `${q.get('dl') === '1' ? 'attachment' : 'inline'}; filename="himalayan-contact.vcf"`,
+      'Cache-Control': 'no-store, no-transform',
     },
   });
 }

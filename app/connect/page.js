@@ -36,7 +36,7 @@ export default async function Connect() {
   const actions = [
     show.order && ['Order online', '/menu', 'bag', false],
     show.reserve && s.reservations_enabled && ['Reserve a table', '/#reservation', 'calendar', false],
-    show.call && ['Call us', telHref(s.phone), 'phone', false],
+    show.call && ['Call us', telHref(c.phone || s.phone), 'phone', false],
     show.directions && ['Directions', directionsUrl(s), 'pin', true],
     show.review && ['Leave a review', s.google_review_url || '/review', 'star', !!s.google_review_url],
   ].filter(Boolean);
@@ -80,7 +80,7 @@ export default async function Connect() {
 
         <section>
           <h2 className="cc-h">Contact details</h2>
-          <a className="cc-row" href={telHref(s.phone)}><span className="cc-ico"><Icon name="phone" size={20} /></span><span><small>Phone</small>{s.phone}</span><Icon name="chevron" size={18} /></a>
+          <a className="cc-row" href={telHref(c.phone || s.phone)}><span className="cc-ico"><Icon name="phone" size={20} /></span><span><small>Phone</small>{c.phone || s.phone}</span><Icon name="chevron" size={18} /></a>
           {s.email && <a className="cc-row" href={`mailto:${s.email}`}><span className="cc-ico"><Icon name="mail" size={20} /></span><span><small>Email</small>{s.email}</span><Icon name="chevron" size={18} /></a>}
           <a className="cc-row" href={directionsUrl(s)} target="_blank" rel="noopener noreferrer"><span className="cc-ico"><Icon name="pin" size={20} /></span><span><small>Address</small>{s.address.replace('\n', ', ')}</span><Icon name="chevron" size={18} /></a>
           <div className="cc-row"><span className="cc-ico"><Icon name="clock" size={20} /></span><span><small>Hours</small><span className="pre">{s.hours}</span></span></div>

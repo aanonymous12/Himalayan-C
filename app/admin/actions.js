@@ -368,7 +368,7 @@ export async function saveConnect(a, b) {
       return { platform: PLATFORMS.some((p) => p.key === r.platform) ? r.platform : 'website', url: link };
     });
     const connect = {
-      name: t(fd, 'name', 60), tagline: t(fd, 'tagline', 60), bio: t(fd, 'bio', 400),
+      name: t(fd, 'name', 60), tagline: t(fd, 'tagline', 60), bio: t(fd, 'bio', 400), phone: t(fd, 'phone', 30),
       cover_url: url('cover_url'), logo_url: url('logo_url'), socials,
       show: { order: on(fd, 'show_order'), reserve: on(fd, 'show_reserve'), call: on(fd, 'show_call'), directions: on(fd, 'show_directions'), review: on(fd, 'show_review') },
     };

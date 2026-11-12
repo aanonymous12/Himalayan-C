@@ -26,6 +26,7 @@ export default async function AdminConnect() {
             <div className="field"><label>Name on the card</label><input name="name" maxLength={60} defaultValue={c.name || ''} placeholder={s.business_name} /></div>
             <div className="field"><label>Tagline</label><input name="tagline" maxLength={60} defaultValue={c.tagline || ''} placeholder="Fresh Himalayan cooking" /></div>
           </div>
+          <div className="field"><label>Phone number on the card</label><input name="phone" type="tel" inputMode="tel" maxLength={30} defaultValue={c.phone || ''} placeholder={s.phone || '(512) 748-0104'} /><p className="hint">Used for the Call button and Save contact. Leave empty to use the phone number from Settings.</p></div>
           <div className="field"><label>Short intro</label><textarea name="bio" rows={3} maxLength={400} defaultValue={c.bio || ''} placeholder="Leave empty to use your story from Settings." /></div>
 
           <div className="field"><span className="lbl">Buttons to show</span>
